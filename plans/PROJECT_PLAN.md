@@ -52,9 +52,9 @@ This document outlines the detailed milestones and tasks for the development of 
 - [x] **Frontend**: Add toggle in Settings for "Compress Backups".
 
 ## Milestone 8: System Diagnostics & Port Fixer
-- [ ] **Backend**: Implement port conflict detection (check if 3306/80 are in use).
-- [ ] **Backend**: Implement `fix_port_conflict` (editing `.ini`/`.conf` files).
-- [ ] **Frontend**: Build the "Diagnostics" page with "Auto-Fix" buttons.
+- [x] **Backend**: Implement port conflict detection (check if 3306/80 are in use).
+- [x] **Backend**: Implement `fix_port_conflict` (editing `.ini`/`.conf` files).
+- [x] **Frontend**: Build the "Diagnostics" page with "Auto-Fix" buttons.
 
 ## Milestone 9: Automation & Notifications
 - [ ] **Backend**: Implement a basic Rust scheduler service for recurring backups.
