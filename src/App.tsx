@@ -22,7 +22,7 @@ function App() {
             <Route path="/settings" element={<Settings />} />
           </Routes>
         </MainLayout>
-        <Toaster position="top-right" richColors theme="light" />
+        <Toaster position="top-right" />
       </TooltipProvider>
     </Router>
   );

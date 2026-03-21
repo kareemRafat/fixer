@@ -50,6 +50,7 @@ const Databases = () => {
   const [password, setPassword] = useState("");
 
   const [selectedDbs, setSelectedDbs] = useState<string[]>([]);
+  const [dbsToBackup, setDbsToBackup] = useState<string[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [backupDest, setBackupDest] = useState("");
   const [isBackingUp, setIsBackingUp] = useState(false);
@@ -100,12 +101,12 @@ const Databases = () => {
   };
 
   const handleRunBackup = async () => {
-    if (selectedDbs.length === 0 || !backupDest) return;
+    if (dbsToBackup.length === 0 || !backupDest) return;
     setIsBackingUp(true);
     const suffix =
-      selectedDbs.length > 1
-        ? `batch_${selectedDbs.length}_dbs`
-        : selectedDbs[0];
+      dbsToBackup.length > 1
+        ? `batch_${dbsToBackup.length}_dbs`
+        : dbsToBackup[0];
     const fileName = `${suffix}_${new Date().toISOString().replace(/[:.]/g, "-")}.sql`;
     const fullPath = `${backupDest}\\${fileName}`;
 
@@ -115,12 +116,19 @@ const Databases = () => {
         port,
         user,
         password,
-        databases: selectedDbs,
+        databases: dbsToBackup,
         destPath: fullPath,
       });
       toast.success(result);
       setIsDialogOpen(false);
-      setSelectedDbs([]);
+      setDbsToBackup([]);
+      
+      // If we backed up the exact set that was checked, clear the checks
+      if (selectedDbs.length > 0 && 
+          selectedDbs.length === dbsToBackup.length && 
+          selectedDbs.every(db => dbsToBackup.includes(db))) {
+        setSelectedDbs([]);
+      }
     } catch (err) {
       toast.error(`Backup failed: ${err}`);
     } finally {
@@ -271,7 +279,10 @@ const Databases = () => {
             {selectedDbs.length > 0 && (
               <Button
                 size="xs"
-                onClick={() => setIsDialogOpen(true)}
+                onClick={() => {
+                  setDbsToBackup(selectedDbs);
+                  setIsDialogOpen(true);
+                }}
                 className="bg-primary shadow-sm rounded-md"
               >
                 <ShieldCheck className="mr-2 h-4 w-4" />
@@ -306,7 +317,7 @@ const Databases = () => {
                     size="sm"
                     className="text-sm h-8 border-primary/20 text-primary hover:bg-primary transition-all rounded-md hover:text-white"
                     onClick={() => {
-                      setSelectedDbs([db.name]);
+                      setDbsToBackup([db.name]);
                       setIsDialogOpen(true);
                     }}
                   >
@@ -325,9 +336,11 @@ const Databases = () => {
           <DialogHeader>
             <DialogTitle>Backup Configuration</DialogTitle>
             <DialogDescription>
-              {selectedDbs.length > 1
-                ? `Backing up ${selectedDbs.length} databases`
-                : `Backing up ${selectedDbs[0]}`}
+              {dbsToBackup.length > 1
+                ? `Backing up ${dbsToBackup.length} databases`
+                : dbsToBackup.length === 1
+                ? `Backing up ${dbsToBackup[0]}`
+                : "No database selected"}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
