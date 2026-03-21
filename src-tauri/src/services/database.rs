@@ -222,13 +222,15 @@ pub fn run_restore(
 }
 
 pub fn validate_backup_file(file_path: &str) -> Result<bool, String> {
-    let content = std::fs::read_to_string(file_path)
-        .map_err(|e| format!("Failed to read file for validation: {}", e))?;
+    let content = match std::fs::read_to_string(file_path) {
+        Ok(c) => c,
+        Err(_) => return Err("لم يتم العثور على ملف النسخة الاحتياطية. قد يكون قد تم حذفه أو نقله.".to_string()),
+    };
     
     // Simple check for MySQL dump header
     if content.contains("-- MySQL dump") || content.contains("-- MariaDB dump") {
         Ok(true)
     } else {
-        Ok(false)
+        Err("تنسيق ملف النسخة الاحتياطية غير صالح.".to_string())
     }
 }

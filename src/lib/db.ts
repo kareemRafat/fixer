@@ -5,16 +5,25 @@ let db: Database | null = null;
 export const getDb = async () => {
   if (!db) {
     db = await Database.load("sqlite:backups.db");
+    // Add databases column if it doesn't exist (for migration)
     await db.execute(`
       CREATE TABLE IF NOT EXISTS backups (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         database_name TEXT NOT NULL,
+        databases TEXT, -- New column for JSON list of DBs
         timestamp TEXT NOT NULL,
         file_size INTEGER NOT NULL,
         status TEXT NOT NULL,
         file_path TEXT NOT NULL
       )
     `);
+
+    // Check if column exists, if not add it (simple migration)
+    try {
+      await db.execute("ALTER TABLE backups ADD COLUMN databases TEXT");
+    } catch (e) {
+      // Column already exists or other error we can ignore
+    }
   }
   return db;
 };
@@ -22,6 +31,7 @@ export const getDb = async () => {
 export interface BackupRecord {
   id: number;
   database_name: string;
+  databases?: string; // JSON string of string[]
   timestamp: string;
   file_size: number;
   status: string;
@@ -31,8 +41,15 @@ export interface BackupRecord {
 export const addBackup = async (backup: Omit<BackupRecord, "id">) => {
   const database = await getDb();
   await database.execute(
-    "INSERT INTO backups (database_name, timestamp, file_size, status, file_path) VALUES ($1, $2, $3, $4, $5)",
-    [backup.database_name, backup.timestamp, backup.file_size, backup.status, backup.file_path]
+    "INSERT INTO backups (database_name, databases, timestamp, file_size, status, file_path) VALUES ($1, $2, $3, $4, $5, $6)",
+    [
+      backup.database_name, 
+      backup.databases || null, 
+      backup.timestamp, 
+      backup.file_size, 
+      backup.status, 
+      backup.file_path
+    ]
   );
 };
 

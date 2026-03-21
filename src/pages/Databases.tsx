@@ -132,6 +132,7 @@ const Databases = () => {
       // Log to SQLite
       await addBackup({
         database_name: dbsToBackup.length > 1 ? `${dbsToBackup.length} Databases` : dbsToBackup[0],
+        databases: JSON.stringify(dbsToBackup),
         timestamp: new Date().toISOString(),
         file_size: fileSize,
         status: "Success",
