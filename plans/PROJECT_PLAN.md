@@ -10,15 +10,15 @@ This document outlines the detailed milestones and tasks for the development of 
 - [x] Implement a basic "Ping" command to verify Tauri-to-Rust communication.
 
 ## Milestone 2: UI Shell & Navigation
-- [ ] Implement the `MainLayout` component (Sidebar + Content area).
-- [ ] Setup `react-router-dom` for navigation.
-- [ ] Create page stubs for:
+- [x] Implement the `MainLayout` component (Sidebar + Content area).
+- [x] Setup `react-router-dom` for navigation.
+- [x] Create page stubs for:
     - Dashboard
     - Databases
     - Backups
     - Diagnostics
     - Settings
-- [ ] Implement global state management (e.g., Zustand or React Context) for settings.
+- [x] Implement global state management (e.g., Zustand or React Context) for settings.
 
 ## Milestone 3: Database Detection (MySQL/MariaDB)
 - [ ] **Backend**: Implement `detect_services` to find local MySQL/Apache instances.
