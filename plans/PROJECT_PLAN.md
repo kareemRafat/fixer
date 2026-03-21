@@ -21,10 +21,10 @@ This document outlines the detailed milestones and tasks for the development of 
 - [x] Implement global state management (e.g., Zustand or React Context) for settings.
 
 ## Milestone 3: Database Detection (MySQL/MariaDB)
-- [ ] **Backend**: Implement `detect_services` to find local MySQL/Apache instances.
-- [ ] **Backend**: Implement `list_databases` using `mysql` CLI or library.
-- [ ] **Frontend**: Build the "Databases" page to display detected databases.
-- [ ] **Frontend**: Add "Manual Connection" settings for custom ports/credentials.
+- [x] **Backend**: Implement `detect_services` to find local MySQL/Apache instances.
+- [x] **Backend**: Implement `list_databases` using `mysql` CLI or library.
+- [x] **Frontend**: Build the "Databases" page to display detected databases.
+- [x] **Frontend**: Add "Manual Connection" settings for custom ports/credentials.
 
 ## Milestone 4: Core Backup Engine
 - [ ] **Backend**: Implement `run_backup` command using `mysqldump`.
