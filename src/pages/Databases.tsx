@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
+import { addBackup } from "@/lib/db";
 
 interface DetectedService {
   name: string;
@@ -124,6 +125,24 @@ const Databases = () => {
         databases: dbsToBackup,
         destPath: fullPath,
       });
+
+      // Get file size for logging
+      let fileSize = 0;
+      try {
+        fileSize = await invoke("get_file_size", { path: fullPath });
+      } catch (e) {
+        console.error("Failed to get file size:", e);
+      }
+
+      // Log to SQLite
+      await addBackup({
+        database_name: dbsToBackup.length > 1 ? `${dbsToBackup.length} Databases` : dbsToBackup[0],
+        timestamp: new Date().toISOString(),
+        file_size: fileSize,
+        status: "Success",
+        file_path: fullPath,
+      });
+
       toast.success(result);
       setIsDialogOpen(false);
       setDbsToBackup([]);
@@ -136,6 +155,15 @@ const Databases = () => {
       }
     } catch (err) {
       toast.error(`Backup failed: ${err}`);
+      
+      // Log failure to SQLite
+      await addBackup({
+        database_name: dbsToBackup.length > 1 ? `${dbsToBackup.length} Databases` : dbsToBackup[0],
+        timestamp: new Date().toISOString(),
+        file_size: 0,
+        status: "Failed",
+        file_path: fullPath,
+      });
     } finally {
       setIsBackingUp(false);
     }

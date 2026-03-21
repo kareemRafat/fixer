@@ -1,4 +1,4 @@
-use crate::services::database::{self, DetectedService, DatabaseInfo};
+use crate::services::database::{self, DatabaseInfo, DetectedService};
 
 #[tauri::command]
 pub fn detect_services() -> Vec<DetectedService> {
@@ -6,7 +6,12 @@ pub fn detect_services() -> Vec<DetectedService> {
 }
 
 #[tauri::command]
-pub fn list_databases(host: &str, port: u16, user: &str, password: &str) -> Result<Vec<DatabaseInfo>, String> {
+pub fn list_databases(
+    host: &str,
+    port: u16,
+    user: &str,
+    password: &str,
+) -> Result<Vec<DatabaseInfo>, String> {
     database::list_databases(host, port, user, password)
 }
 
@@ -25,4 +30,17 @@ pub async fn run_backup(
     })
     .await
     .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+pub fn delete_file(path: String) -> Result<(), String> {
+    std::fs::remove_file(path)
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn get_file_size(path: String) -> Result<u64, String> {
+    std::fs::metadata(path)
+        .map(|m| m.len())
+        .map_err(|e| e.to_string())
 }

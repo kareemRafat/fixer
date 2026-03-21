@@ -1,4 +1,4 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use std::process::Command;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -27,7 +27,7 @@ pub fn detect_services() -> Vec<DetectedService> {
 
     if let Ok(output) = output {
         let stdout = String::from_utf8_lossy(&output.stdout);
-        
+
         // Check for common MySQL service names
         if stdout.contains("SERVICE_NAME: MySQL") || stdout.contains("SERVICE_NAME: mariadb") {
             services.push(DetectedService {
@@ -52,7 +52,12 @@ pub fn detect_services() -> Vec<DetectedService> {
     services
 }
 
-pub fn list_databases(host: &str, port: u16, user: &str, password: &str) -> Result<Vec<DatabaseInfo>, String> {
+pub fn list_databases(
+    host: &str,
+    port: u16,
+    user: &str,
+    password: &str,
+) -> Result<Vec<DatabaseInfo>, String> {
     let mut args = vec![
         "-h".to_string(),
         host.to_string(),
@@ -69,16 +74,15 @@ pub fn list_databases(host: &str, port: u16, user: &str, password: &str) -> Resu
     args.push("-e".to_string());
     args.push("SELECT schema_name FROM information_schema.schemata WHERE schema_name NOT IN ('information_schema', 'mysql', 'performance_schema', 'sys');".to_string());
 
-    let output = Command::new("mysql")
-        .args(&args)
-        .output();
+    let output = Command::new("mysql").args(&args).output();
 
     match output {
         Ok(output) => {
             if output.status.success() {
                 let stdout = String::from_utf8_lossy(&output.stdout);
                 let mut dbs = Vec::new();
-                for line in stdout.lines().skip(1) { // Skip header
+                for line in stdout.lines().skip(1) {
+                    // Skip header
                     if !line.trim().is_empty() {
                         dbs.push(DatabaseInfo {
                             name: line.trim().to_string(),
@@ -91,7 +95,7 @@ pub fn list_databases(host: &str, port: u16, user: &str, password: &str) -> Resu
             } else {
                 Err(String::from_utf8_lossy(&output.stderr).to_string())
             }
-        },
+        }
         Err(e) => Err(e.to_string()),
     }
 }
@@ -120,7 +124,7 @@ pub fn run_backup(
     if databases.len() > 1 {
         args.push("--databases".to_string());
     }
-    
+
     for db in &databases {
         args.push(db.clone());
     }
@@ -128,22 +132,26 @@ pub fn run_backup(
     args.push("--result-file".to_string());
     args.push(dest_path.to_string());
 
-    let output = Command::new("mysqldump")
-        .args(&args)
-        .output();
+    let output = Command::new("mysqldump").args(&args).output();
 
     match output {
         Ok(output) => {
             if output.status.success() {
                 if databases.len() > 1 {
-                    Ok(format!("Backup of {} databases completed successfully.", databases.len()))
+                    Ok(format!(
+                        "Backup of {} databases completed successfully.",
+                        databases.len()
+                    ))
                 } else {
-                    Ok(format!("Backup of {} completed successfully.", databases[0]))
+                    Ok(format!(
+                        "Backup of {} completed successfully.",
+                        databases[0]
+                    ))
                 }
             } else {
                 Err(String::from_utf8_lossy(&output.stderr).to_string())
             }
-        },
+        }
         Err(e) => Err(e.to_string()),
     }
 }

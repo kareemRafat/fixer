@@ -33,13 +33,13 @@ This document outlines the detailed milestones and tasks for the development of 
 - [x] **Backend**: Implement basic error handling for failed dumps (e.g., permission issues).
 
 ## Milestone 5: Backup History & Metadata
-- [ ] Setup a local SQLite database (via `tauri-plugin-sql`) to store backup history.
-- [ ] **Frontend**: Build the "Backups" page with a table showing:
+- [x] Setup a local SQLite database (via `tauri-plugin-sql`) to store backup history.
+- [x] **Frontend**: Build the "Backups" page with a table showing:
     - Database Name
     - Timestamp
     - File Size
     - Status (Success/Fail)
-- [ ] Implement "Delete Backup" (file + record removal).
+- [x] Implement "Delete Backup" (file + record removal).
 
 ## Milestone 6: Restore Functionality
 - [ ] **Backend**: Implement `run_restore` command using `mysql` import.

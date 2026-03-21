@@ -1,2 +1,2 @@
-pub mod ping;
 pub mod database;
+pub mod ping;
