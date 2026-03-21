@@ -74,7 +74,12 @@ const Databases = () => {
         user,
         password,
       });
-      setDatabases(result);
+      
+      // Filter out system databases
+      const systemDbs = ["information_schema", "mysql", "performance_schema", "sys", "phpmyadmin"];
+      const userDbs = result.filter(db => !systemDbs.includes(db.name.toLowerCase()));
+      
+      setDatabases(userDbs);
       toast.success(`Connected to ${host}`);
     } catch (err) {
       setError(String(err));
