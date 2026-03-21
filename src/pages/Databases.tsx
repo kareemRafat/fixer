@@ -5,8 +5,6 @@ import {
   Database,
   RefreshCw,
   AlertCircle,
-  Server,
-  PlayCircle,
   FolderOpen,
   ShieldCheck,
   ChevronRight,
@@ -25,6 +23,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { addBackup } from "@/lib/db";
+import { useSettingsStore } from "@/store/useSettingsStore";
 
 interface DetectedService {
   name: string;
@@ -40,20 +39,16 @@ interface DatabaseInfo {
 }
 
 const Databases = () => {
+  const { host, port, user, password, setHost, setPort, setUser, setPassword, backupPath, setBackupPath } = useSettingsStore();
+  
   const [services, setServices] = useState<DetectedService[]>([]);
   const [databases, setDatabases] = useState<DatabaseInfo[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [host, setHost] = useState("localhost");
-  const [port, setPort] = useState(3306);
-  const [user, setUser] = useState("root");
-  const [password, setPassword] = useState("");
-
   const [selectedDbs, setSelectedDbs] = useState<string[]>([]);
   const [dbsToBackup, setDbsToBackup] = useState<string[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [backupDest, setBackupDest] = useState("");
   const [isBackingUp, setIsBackingUp] = useState(false);
 
   const detectServices = async () => {
@@ -107,14 +102,14 @@ const Databases = () => {
   };
 
   const handleRunBackup = async () => {
-    if (dbsToBackup.length === 0 || !backupDest) return;
+    if (dbsToBackup.length === 0 || !backupPath) return;
     setIsBackingUp(true);
     const suffix =
       dbsToBackup.length > 1
         ? `batch_${dbsToBackup.length}_dbs`
         : dbsToBackup[0];
     const fileName = `${suffix}_${new Date().toISOString().replace(/[:.]/g, "-")}.sql`;
-    const fullPath = `${backupDest}\\${fileName}`;
+    const fullPath = `${backupPath}\\${fileName}`;
 
     try {
       const result: string = await invoke("run_backup", {
@@ -172,7 +167,7 @@ const Databases = () => {
   const pickBackupFolder = async () => {
     try {
       const selected = await open({ directory: true, multiple: false });
-      if (selected && typeof selected === "string") setBackupDest(selected);
+      if (selected && typeof selected === "string") setBackupPath(selected);
     } catch (err) {
       console.error(err);
     }
@@ -311,7 +306,7 @@ const Databases = () => {
             </Button>
             {selectedDbs.length > 0 && (
               <Button
-                size="xs"
+                size="sm"
                 onClick={() => {
                   setDbsToBackup(selectedDbs);
                   setIsDialogOpen(true);
@@ -319,7 +314,7 @@ const Databases = () => {
                 className="bg-primary shadow-sm rounded-md"
               >
                 <ShieldCheck className="mr-2 h-4 w-4" />
-                Databse Selected ({selectedDbs.length})
+                Database Selected ({selectedDbs.length})
               </Button>
             )}
           </div>
@@ -381,7 +376,7 @@ const Databases = () => {
               <label className="text-sm font-medium">Destination Folder</label>
               <div className="flex gap-2">
                 <Input
-                  value={backupDest}
+                  value={backupPath}
                   readOnly
                   placeholder="Choose folder..."
                   className="flex-1"
@@ -402,7 +397,7 @@ const Databases = () => {
             </Button>
             <Button
               onClick={handleRunBackup}
-              disabled={!backupDest || isBackingUp}
+              disabled={!backupPath || isBackingUp}
             >
               {isBackingUp ? "Processing..." : "Start Backup"}
             </Button>

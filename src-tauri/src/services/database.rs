@@ -155,3 +155,80 @@ pub fn run_backup(
         Err(e) => Err(e.to_string()),
     }
 }
+
+pub fn run_restore(
+    host: &str,
+    port: u16,
+    user: &str,
+    password: &str,
+    db_name: &str,
+    file_path: &str,
+) -> Result<String, String> {
+    let mut args = vec![
+        "-h".to_string(),
+        host.to_string(),
+        "-P".to_string(),
+        port.to_string(),
+        "-u".to_string(),
+        user.to_string(),
+    ];
+
+    if !password.is_empty() {
+        args.push(format!("-p{}", password));
+    }
+
+    // 1. Ensure the database exists before restoring
+    let mut create_db_args = args.clone();
+    create_db_args.push("-e".to_string());
+    create_db_args.push(format!("CREATE DATABASE IF NOT EXISTS `{}`;", db_name));
+
+    let create_output = Command::new("mysql")
+        .args(&create_db_args)
+        .output();
+
+    match create_output {
+        Ok(output) => {
+            if !output.status.success() {
+                return Err(format!(
+                    "Failed to ensure database exists: {}",
+                    String::from_utf8_lossy(&output.stderr)
+                ));
+            }
+        }
+        Err(e) => return Err(format!("Failed to execute mysql command: {}", e)),
+    }
+
+    // 2. Specify the database to restore into
+    args.push(db_name.to_string());
+    
+    // Read the file and pipe it to mysql command
+    let file = std::fs::File::open(file_path).map_err(|e| format!("Failed to open backup file: {}", e))?;
+    
+    let output = Command::new("mysql")
+        .args(&args)
+        .stdin(file)
+        .output();
+
+    match output {
+        Ok(output) => {
+            if output.status.success() {
+                Ok(format!("Restore of {} completed successfully.", db_name))
+            } else {
+                Err(String::from_utf8_lossy(&output.stderr).to_string())
+            }
+        }
+        Err(e) => Err(e.to_string()),
+    }
+}
+
+pub fn validate_backup_file(file_path: &str) -> Result<bool, String> {
+    let content = std::fs::read_to_string(file_path)
+        .map_err(|e| format!("Failed to read file for validation: {}", e))?;
+    
+    // Simple check for MySQL dump header
+    if content.contains("-- MySQL dump") || content.contains("-- MariaDB dump") {
+        Ok(true)
+    } else {
+        Ok(false)
+    }
+}

@@ -44,3 +44,24 @@ pub fn get_file_size(path: String) -> Result<u64, String> {
         .map(|m| m.len())
         .map_err(|e| e.to_string())
 }
+
+#[tauri::command]
+pub async fn run_restore(
+    host: String,
+    port: u16,
+    user: String,
+    password: String,
+    db_name: String,
+    file_path: String,
+) -> Result<String, String> {
+    tokio::task::spawn_blocking(move || {
+        database::run_restore(&host, port, &user, &password, &db_name, &file_path)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+pub fn validate_backup_file(file_path: String) -> Result<bool, String> {
+    database::validate_backup_file(&file_path)
+}

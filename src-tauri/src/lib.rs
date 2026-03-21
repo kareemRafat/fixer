@@ -13,6 +13,8 @@ pub fn run() {
             commands::database::list_databases,
             commands::database::run_backup,
             commands::database::get_file_size,
+            commands::database::run_restore,
+            commands::database::validate_backup_file,
             commands::database::delete_file
         ])
         .run(tauri::generate_context!())

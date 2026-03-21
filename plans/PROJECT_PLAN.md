@@ -42,9 +42,9 @@ This document outlines the detailed milestones and tasks for the development of 
 - [x] Implement "Delete Backup" (file + record removal).
 
 ## Milestone 6: Restore Functionality
-- [ ] **Backend**: Implement `run_restore` command using `mysql` import.
-- [ ] **Backend**: Add validation logic to check if a SQL file is a valid backup.
-- [ ] **Frontend**: Add "Restore" action with a safety confirmation dialog.
+- [x] **Backend**: Implement `run_restore` command using `mysql` import.
+- [x] **Backend**: Add validation logic to check if a SQL file is a valid backup.
+- [x] **Frontend**: Add "Restore" action with a safety confirmation dialog.
 
 ## Milestone 7: Advanced File Operations
 - [ ] **Backend**: Implement "Raw Backup" (direct folder copy for `data/` dir).
