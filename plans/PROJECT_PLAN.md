@@ -3,11 +3,11 @@
 This document outlines the detailed milestones and tasks for the development of the Local Database Backup Manager, based on the `Architecture.md` and initial `PLAN.md`.
 
 ## Milestone 1: Foundation & Project Setup
-- [ ] Initialize Tauri project with React (TypeScript) and Vite.
-- [ ] Setup Tailwind CSS and shadcn/ui.
-- [ ] Configure project directory structure as per `Architecture.md`.
-- [ ] Setup basic Rust backend modules (`commands/`, `services/`).
-- [ ] Implement a basic "Ping" command to verify Tauri-to-Rust communication.
+- [x] Initialize Tauri project with React (TypeScript) and Vite.
+- [x] Setup Tailwind CSS and shadcn/ui.
+- [x] Configure project directory structure as per `Architecture.md`.
+- [x] Setup basic Rust backend modules (`commands/`, `services/`).
+- [x] Implement a basic "Ping" command to verify Tauri-to-Rust communication.
 
 ## Milestone 2: UI Shell & Navigation
 - [ ] Implement the `MainLayout` component (Sidebar + Content area).
