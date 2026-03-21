@@ -1,11 +1,27 @@
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
-import { Database, RefreshCw, AlertCircle, Server, PlayCircle, FolderOpen, ShieldCheck, ChevronRight } from "lucide-react";
+import {
+  Database,
+  RefreshCw,
+  AlertCircle,
+  Server,
+  PlayCircle,
+  FolderOpen,
+  ShieldCheck,
+  ChevronRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 
@@ -68,10 +84,10 @@ const Databases = () => {
   };
 
   const toggleDbSelection = (dbName: string) => {
-    setSelectedDbs(prev => 
-      prev.includes(dbName) 
-        ? prev.filter(name => name !== dbName)
-        : [...prev, dbName]
+    setSelectedDbs((prev) =>
+      prev.includes(dbName)
+        ? prev.filter((name) => name !== dbName)
+        : [...prev, dbName],
     );
   };
 
@@ -79,14 +95,17 @@ const Databases = () => {
     if (selectedDbs.length === databases.length) {
       setSelectedDbs([]);
     } else {
-      setSelectedDbs(databases.map(db => db.name));
+      setSelectedDbs(databases.map((db) => db.name));
     }
   };
 
   const handleRunBackup = async () => {
     if (selectedDbs.length === 0 || !backupDest) return;
     setIsBackingUp(true);
-    const suffix = selectedDbs.length > 1 ? `batch_${selectedDbs.length}_dbs` : selectedDbs[0];
+    const suffix =
+      selectedDbs.length > 1
+        ? `batch_${selectedDbs.length}_dbs`
+        : selectedDbs[0];
     const fileName = `${suffix}_${new Date().toISOString().replace(/[:.]/g, "-")}.sql`;
     const fullPath = `${backupDest}\\${fileName}`;
 
@@ -127,49 +146,98 @@ const Databases = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold tracking-tight">Databases</h1>
-        <Button onClick={detectServices} variant="outline" size="sm">
+        <Button
+          onClick={detectServices}
+          variant="outline"
+          size="sm"
+          className="rounded-md"
+        >
           <RefreshCw className="mr-2 h-4 w-4" />
           Refresh
         </Button>
       </div>
 
       {/* Services Row */}
-      <div className="flex items-center gap-4 py-3 px-4 bg-secondary/20 rounded-lg border">
-        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mr-2">Services:</span>
+      <div className="flex items-center justify-between gap-4 py-3 px-4 bg-secondary/20 rounded-lg border">
+        <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mr-2">
+          Services :
+        </span>
         {services.length === 0 ? (
-          <span className="text-sm text-muted-foreground italic">None detected</span>
+          <span className="text-sm text-muted-foreground italic">
+            None detected
+          </span>
         ) : (
           services.map((s, i) => (
-            <div key={i} className="flex items-center gap-2 bg-background px-3 py-1 rounded-full border text-sm shadow-sm">
+            <div
+              key={i}
+              className="flex items-center gap-2 bg-background px-5 py-1 rounded-lg border text-sm shadow-sm"
+            >
               <div className="h-2 w-2 rounded-full bg-green-500"></div>
               <span className="font-medium">{s.name}</span>
-              <span className="text-muted-foreground text-xs">:{s.port}</span>
+              <span className="text-muted-foreground text-sm">: {s.port}</span>
             </div>
           ))
         )}
       </div>
 
       {/* Connection Row */}
-      <div className="flex flex-wrap items-end gap-4 p-4 border rounded-lg shadow-sm bg-card">
-        <div className="space-y-1.5 flex-1 min-w-[120px]">
-          <label className="text-[10px] font-bold text-muted-foreground uppercase">Host</label>
-          <Input value={host} onChange={(e) => setHost(e.target.value)} className="h-9" />
+      <div className="gap-4 p-4 border rounded-lg shadow-sm bg-card">
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          <div className="space-y-1.5 flex-1 min-w-[120px]">
+            <label className="text-xs font-semibold text-muted-foreground uppercase">
+              Host
+            </label>
+            <Input
+              value={host}
+              onChange={(e) => setHost(e.target.value)}
+              className="h-9"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-muted-foreground uppercase">
+              Port
+            </label>
+            <Input
+              type="number"
+              value={port}
+              onChange={(e) => setPort(Number(e.target.value))}
+              className="h-9"
+            />
+          </div>
+          <div className="space-y-1.5 flex-1 min-w-[120px]">
+            <label className="text-xs font-semibold text-muted-foreground uppercase">
+              Username
+            </label>
+            <Input
+              value={user}
+              onChange={(e) => setUser(e.target.value)}
+              className="h-9"
+            />
+          </div>
+          <div className="space-y-1.5 flex-1 min-w-[120px]">
+            <label className="text-xs font-semibold text-muted-foreground uppercase">
+              Password
+            </label>
+            <Input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="None"
+              className="h-9"
+            />
+          </div>
         </div>
-        <div className="space-y-1.5 w-24">
-          <label className="text-[10px] font-bold text-muted-foreground uppercase">Port</label>
-          <Input type="number" value={port} onChange={(e) => setPort(Number(e.target.value))} className="h-9" />
-        </div>
-        <div className="space-y-1.5 flex-1 min-w-[120px]">
-          <label className="text-[10px] font-bold text-muted-foreground uppercase">Username</label>
-          <Input value={user} onChange={(e) => setUser(e.target.value)} className="h-9" />
-        </div>
-        <div className="space-y-1.5 flex-1 min-w-[120px]">
-          <label className="text-[10px] font-bold text-muted-foreground uppercase">Password</label>
-          <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="None" className="h-9" />
-        </div>
-        <Button onClick={fetchDatabases} disabled={loading} className="h-9 px-6 font-semibold">
-          {loading ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <Database className="mr-2 h-4 w-4" />}
-          Fetch Databases
+        <Button
+          onClick={fetchDatabases}
+          disabled={loading}
+          className="w-full h-9 px-6 font-semibold"
+        >
+          {loading ? (
+            <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Database className="mr-2 h-4 w-4" />
+          )}
+          Check Databases
         </Button>
       </div>
 
@@ -184,42 +252,63 @@ const Databases = () => {
       {/* Databases List */}
       {databases.length > 0 && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between border-b pb-2">
-            <h2 className="text-lg font-medium">Available Databases ({databases.length})</h2>
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" onClick={toggleSelectAll} className="text-xs">
-                {selectedDbs.length === databases.length ? "Deselect All" : "Select All"}
+          <div className="flex items-start justify-between gap-3 flex-col border-b pb-2">
+            <h2 className="text-lg font-medium">
+              Available Databases ({databases.length})
+            </h2>
+          </div>
+          <div className="flex items-center justify-end gap-2 ">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleSelectAll}
+              className="text-sm rounded-md"
+            >
+              {selectedDbs.length === databases.length
+                ? "Deselect All"
+                : "Select All"}
+            </Button>
+            {selectedDbs.length > 0 && (
+              <Button
+                size="xs"
+                onClick={() => setIsDialogOpen(true)}
+                className="bg-primary shadow-sm rounded-md"
+              >
+                <ShieldCheck className="mr-2 h-4 w-4" />
+                Databse Selected ({selectedDbs.length})
               </Button>
-              {selectedDbs.length > 0 && (
-                <Button size="sm" onClick={() => setIsDialogOpen(true)} className="bg-primary shadow-sm">
-                  <ShieldCheck className="mr-2 h-4 w-4" />
-                  Backup Selected ({selectedDbs.length})
-                </Button>
-              )}
-            </div>
+            )}
           </div>
 
           <div className="border rounded-xl overflow-hidden divide-y bg-card shadow-sm">
             {databases.map((db, i) => {
               const isSelected = selectedDbs.includes(db.name);
               return (
-                <div key={i} className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
+                <div
+                  key={i}
+                  className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors"
+                >
                   <div className="flex items-center gap-6">
-                    <Checkbox 
-                      checked={isSelected} 
+                    <Checkbox
+                      checked={isSelected}
                       onCheckedChange={() => toggleDbSelection(db.name)}
                       className="h-5 w-5"
                     />
                     <div className="flex items-center gap-3">
-                      <Database className={`h-5 w-5 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
+                      <Database
+                        className={`h-5 w-5 ${isSelected ? "text-primary" : "text-muted-foreground"}`}
+                      />
                       <span className="font-medium text-sm">{db.name}</span>
                     </div>
                   </div>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="text-xs h-8 border-primary/20 text-primary hover:bg-primary/5 hover:border-primary transition-all"
-                    onClick={() => { setSelectedDbs([db.name]); setIsDialogOpen(true); }}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-sm h-8 border-primary/20 text-primary hover:bg-primary transition-all rounded-md hover:text-white"
+                    onClick={() => {
+                      setSelectedDbs([db.name]);
+                      setIsDialogOpen(true);
+                    }}
                   >
                     Select <ChevronRight className="ml-1 h-3 w-3" />
                   </Button>
@@ -236,21 +325,39 @@ const Databases = () => {
           <DialogHeader>
             <DialogTitle>Backup Configuration</DialogTitle>
             <DialogDescription>
-              {selectedDbs.length > 1 ? `Backing up ${selectedDbs.length} databases` : `Backing up ${selectedDbs[0]}`}
+              {selectedDbs.length > 1
+                ? `Backing up ${selectedDbs.length} databases`
+                : `Backing up ${selectedDbs[0]}`}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Destination Folder</label>
               <div className="flex gap-2">
-                <Input value={backupDest} readOnly placeholder="Choose folder..." className="flex-1" />
-                <Button variant="outline" size="icon" onClick={pickBackupFolder}><FolderOpen className="h-4 w-4" /></Button>
+                <Input
+                  value={backupDest}
+                  readOnly
+                  placeholder="Choose folder..."
+                  className="flex-1"
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={pickBackupFolder}
+                >
+                  <FolderOpen className="h-4 w-4" />
+                </Button>
               </div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleRunBackup} disabled={!backupDest || isBackingUp}>
+            <Button variant="ghost" onClick={() => setIsDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleRunBackup}
+              disabled={!backupDest || isBackingUp}
+            >
               {isBackingUp ? "Processing..." : "Start Backup"}
             </Button>
           </DialogFooter>
