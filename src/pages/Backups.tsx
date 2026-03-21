@@ -18,6 +18,8 @@ import {
   ChevronDown,
   ChevronRight,
   Database as DbIcon,
+  Zap,
+  FileCode,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -42,7 +44,7 @@ const formatBytes = (bytes: number, decimals = 2) => {
 };
 
 const Backups = () => {
-  const { host, port, user, password } = useSettingsStore();
+  const { host, port, user, password, mysqlDataPath } = useSettingsStore();
   const [backups, setBackups] = useState<BackupRecord[]>([]);
   const [recordToDelete, setRecordToDelete] = useState<BackupRecord | null>(
     null,
@@ -102,11 +104,13 @@ const Backups = () => {
 
     setIsRestoring(true);
     try {
-      // 1. Validate file exists and is a valid dump
-      // The backend now returns translated error strings directly in the Result error
-      await invoke("validate_backup_file", {
-        filePath: recordToRestore.file_path,
-      });
+      // 1. Validate file exists and is a valid dump (Only for SQL backups)
+      // For Raw backups (directories), we skip the SQL header validation
+      if (recordToRestore.backup_type !== "raw") {
+        await invoke("validate_backup_file", {
+          filePath: recordToRestore.file_path,
+        });
+      }
 
       // 2. Run restore
       const result: string = await invoke("run_restore", {
@@ -116,6 +120,7 @@ const Backups = () => {
         password,
         dbName: recordToRestore.database_name,
         filePath: recordToRestore.file_path,
+        mysqlDataPath, // Added Milestone 7 parameter
       });
 
       toast.success(result);
@@ -248,22 +253,43 @@ const Backups = () => {
                     {isExpanded && (
                       <TableRow className="bg-muted/30">
                         <TableCell colSpan={6} className="py-0">
-                          <div className="p-4 pl-12 space-y-2">
-                            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                              {dbList.length > 1
-                                ? "Databases in this backup:"
-                                : "Target Database:"}
-                            </h4>
-                            <div className="flex flex-wrap gap-2">
-                              {dbList.map((db, idx) => (
-                                <div
-                                  key={idx}
-                                  className="flex items-center gap-1.5 bg-background border rounded-md px-2 py-1 text-sm shadow-sm"
-                                >
-                                  <DbIcon className="h-3 w-3 text-primary" />
-                                  <span>{db}</span>
-                                </div>
-                              ))}
+                          <div className="p-4 pl-12 grid grid-cols-2 gap-8">
+                            <div className="space-y-2">
+                              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                {dbList.length > 1
+                                  ? "Databases in this backup:"
+                                  : "Target Database:"}
+                              </h4>
+                              <div className="flex flex-wrap gap-2">
+                                {dbList.map((db, idx) => (
+                                  <div
+                                    key={idx}
+                                    className="flex items-center gap-1.5 bg-background border rounded-md px-2 py-1 text-sm shadow-sm"
+                                  >
+                                    <DbIcon className="h-3 w-3 text-primary" />
+                                    <span>{db}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                Backup Type:
+                              </h4>
+                              <div className="flex items-center gap-2">
+                                <Badge variant="outline" className="capitalize bg-background">
+                                  {backup.backup_type === "raw" ? (
+                                    <span className="flex items-center gap-1.5 text-amber-600">
+                                      <Zap className="h-3 w-3" /> Raw Copy (Physical)
+                                    </span>
+                                  ) : (
+                                    <span className="flex items-center gap-1.5 text-blue-600">
+                                      <FileCode className="h-3 w-3" /> SQL Dump
+                                    </span>
+                                  )}
+                                </Badge>
+                              </div>
                             </div>
                           </div>
                         </TableCell>

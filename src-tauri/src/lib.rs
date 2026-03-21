@@ -15,6 +15,9 @@ pub fn run() {
             commands::database::get_file_size,
             commands::database::run_restore,
             commands::database::validate_backup_file,
+            commands::database::compress_file,
+            commands::database::run_raw_backup,
+            commands::database::detect_xampp_data_path,
             commands::database::delete_file
         ])
         .run(tauri::generate_context!())

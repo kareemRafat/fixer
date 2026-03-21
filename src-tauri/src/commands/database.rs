@@ -53,9 +53,10 @@ pub async fn run_restore(
     password: String,
     db_name: String,
     file_path: String,
+    mysql_data_path: String,
 ) -> Result<String, String> {
     tokio::task::spawn_blocking(move || {
-        database::run_restore(&host, port, &user, &password, &db_name, &file_path)
+        database::run_restore(&host, port, &user, &password, &db_name, &file_path, &mysql_data_path)
     })
     .await
     .map_err(|e| e.to_string())?
@@ -64,4 +65,27 @@ pub async fn run_restore(
 #[tauri::command]
 pub fn validate_backup_file(file_path: String) -> Result<bool, String> {
     database::validate_backup_file(&file_path)
+}
+
+#[tauri::command]
+pub async fn compress_file(source_path: String, dest_path: String) -> Result<(), String> {
+    tokio::task::spawn_blocking(move || {
+        database::compress_file(&source_path, &dest_path)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+pub async fn run_raw_backup(source_dir: String, dest_dir: String) -> Result<String, String> {
+    tokio::task::spawn_blocking(move || {
+        database::run_raw_backup(&source_dir, &dest_dir)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+pub fn detect_xampp_data_path() -> Option<String> {
+    database::detect_xampp_data_path()
 }

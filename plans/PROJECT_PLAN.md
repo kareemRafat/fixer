@@ -47,9 +47,9 @@ This document outlines the detailed milestones and tasks for the development of 
 - [x] **Frontend**: Add "Restore" action with a safety confirmation dialog.
 
 ## Milestone 7: Advanced File Operations
-- [ ] **Backend**: Implement "Raw Backup" (direct folder copy for `data/` dir).
-- [ ] **Backend**: Integrate compression (Zlib/Gzip) for `.sql` exports.
-- [ ] **Frontend**: Add toggle in Settings for "Compress Backups".
+- [x] **Backend**: Implement "Raw Backup" (direct folder copy for `data/` dir).
+- [x] **Backend**: Integrate compression (Zlib/Gzip) for `.sql` exports.
+- [x] **Frontend**: Add toggle in Settings for "Compress Backups".
 
 ## Milestone 8: System Diagnostics & Port Fixer
 - [ ] **Backend**: Implement port conflict detection (check if 3306/80 are in use).
