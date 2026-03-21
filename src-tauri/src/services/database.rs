@@ -53,16 +53,24 @@ pub fn detect_services() -> Vec<DetectedService> {
 }
 
 pub fn list_databases(host: &str, port: u16, user: &str, password: &str) -> Result<Vec<DatabaseInfo>, String> {
-    // For now, we use the mysql CLI to list databases to avoid complex library dependencies
-    // in this initial phase.
+    let mut args = vec![
+        "-h".to_string(),
+        host.to_string(),
+        "-P".to_string(),
+        port.to_string(),
+        "-u".to_string(),
+        user.to_string(),
+    ];
+
+    if !password.is_empty() {
+        args.push(format!("-p{}", password));
+    }
+
+    args.push("-e".to_string());
+    args.push("SELECT schema_name FROM information_schema.schemata WHERE schema_name NOT IN ('information_schema', 'mysql', 'performance_schema', 'sys');".to_string());
+
     let output = Command::new("mysql")
-        .args([
-            "-h", host,
-            "-P", &port.to_string(),
-            "-u", user,
-            format!("-p{}", password).as_str(),
-            "-e", "SELECT schema_name FROM information_schema.schemata WHERE schema_name NOT IN ('information_schema', 'mysql', 'performance_schema', 'sys');"
-        ])
+        .args(&args)
         .output();
 
     match output {
@@ -80,6 +88,58 @@ pub fn list_databases(host: &str, port: u16, user: &str, password: &str) -> Resu
                     }
                 }
                 Ok(dbs)
+            } else {
+                Err(String::from_utf8_lossy(&output.stderr).to_string())
+            }
+        },
+        Err(e) => Err(e.to_string()),
+    }
+}
+
+pub fn run_backup(
+    host: &str,
+    port: u16,
+    user: &str,
+    password: &str,
+    databases: Vec<String>,
+    dest_path: &str,
+) -> Result<String, String> {
+    let mut args = vec![
+        "-h".to_string(),
+        host.to_string(),
+        "-P".to_string(),
+        port.to_string(),
+        "-u".to_string(),
+        user.to_string(),
+    ];
+
+    if !password.is_empty() {
+        args.push(format!("-p{}", password));
+    }
+
+    if databases.len() > 1 {
+        args.push("--databases".to_string());
+    }
+    
+    for db in &databases {
+        args.push(db.clone());
+    }
+
+    args.push("--result-file".to_string());
+    args.push(dest_path.to_string());
+
+    let output = Command::new("mysqldump")
+        .args(&args)
+        .output();
+
+    match output {
+        Ok(output) => {
+            if output.status.success() {
+                if databases.len() > 1 {
+                    Ok(format!("Backup of {} databases completed successfully.", databases.len()))
+                } else {
+                    Ok(format!("Backup of {} completed successfully.", databases[0]))
+                }
             } else {
                 Err(String::from_utf8_lossy(&output.stderr).to_string())
             }

@@ -27,10 +27,10 @@ This document outlines the detailed milestones and tasks for the development of 
 - [x] **Frontend**: Add "Manual Connection" settings for custom ports/credentials.
 
 ## Milestone 4: Core Backup Engine
-- [ ] **Backend**: Implement `run_backup` command using `mysqldump`.
-- [ ] **Backend**: Implement `filesystem::ensure_backup_dir` to manage storage paths.
-- [ ] **Frontend**: Implement "Backup Now" functionality with a progress overlay.
-- [ ] **Backend**: Implement basic error handling for failed dumps (e.g., permission issues).
+- [x] **Backend**: Implement `run_backup` command using `mysqldump`.
+- [x] **Backend**: Implement `filesystem::ensure_backup_dir` to manage storage paths.
+- [x] **Frontend**: Implement "Backup Now" functionality with a progress overlay.
+- [x] **Backend**: Implement basic error handling for failed dumps (e.g., permission issues).
 
 ## Milestone 5: Backup History & Metadata
 - [ ] Setup a local SQLite database (via `tauri-plugin-sql`) to store backup history.

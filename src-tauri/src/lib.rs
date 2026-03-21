@@ -5,10 +5,12 @@ mod services;
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
             commands::ping::ping,
             commands::database::detect_services,
-            commands::database::list_databases
+            commands::database::list_databases,
+            commands::database::run_backup
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

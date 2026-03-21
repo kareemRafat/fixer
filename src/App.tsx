@@ -6,6 +6,7 @@ import Backups from "./pages/Backups";
 import Diagnostics from "./pages/Diagnostics";
 import Settings from "./pages/Settings";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/sonner";
 import "./App.css";
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
             <Route path="/settings" element={<Settings />} />
           </Routes>
         </MainLayout>
+        <Toaster position="top-right" richColors theme="light" />
       </TooltipProvider>
     </Router>
   );
