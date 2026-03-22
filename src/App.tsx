@@ -4,6 +4,7 @@ import Dashboard from "./pages/Dashboard";
 import Databases from "./pages/Databases";
 import Backups from "./pages/Backups";
 import Diagnostics from "./pages/Diagnostics";
+import Schedules from "./pages/Schedules";
 import Settings from "./pages/Settings";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
@@ -19,6 +20,7 @@ function App() {
             <Route path="/databases" element={<Databases />} />
             <Route path="/backups" element={<Backups />} />
             <Route path="/diagnostics" element={<Diagnostics />} />
+            <Route path="/schedules" element={<Schedules />} />
             <Route path="/settings" element={<Settings />} />
           </Routes>
         </MainLayout>

@@ -11,6 +11,10 @@ pub fn kill_process(pid: u32) -> Result<(), String> {
 }
 
 #[tauri::command]
-pub fn fix_port_conflict(service_type: String, old_port: u16, new_port: u16) -> Result<String, String> {
+pub fn fix_port_conflict(
+    service_type: String,
+    old_port: u16,
+    new_port: u16,
+) -> Result<String, String> {
     diagnostics::fix_port_conflict(&service_type, old_port, new_port)
 }

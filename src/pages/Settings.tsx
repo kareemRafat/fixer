@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { invoke } from "@tauri-apps/api/core";
 import { Button } from "@/components/ui/button";
@@ -8,9 +9,29 @@ import { Separator } from "@/components/ui/separator";
 import { open } from "@tauri-apps/plugin-dialog";
 import { FolderOpen, Save, Shield } from "lucide-react";
 import { toast } from "sonner";
+import { getDb } from "@/lib/db";
 
 const Settings = () => {
   const settings = useSettingsStore();
+
+  useEffect(() => {
+    // Initial sync from DB to store on load
+    const loadSettingsFromDb = async () => {
+      const db = await getDb();
+      const settingsFromDb = await db.select<any[]>("SELECT * FROM settings");
+      settingsFromDb.forEach(s => {
+        switch (s.key) {
+          case 'host': settings.setHost(s.value); break;
+          case 'port': settings.setPort(Number(s.value)); break;
+          case 'user': settings.setUser(s.value); break;
+          case 'password': settings.setPassword(s.value); break;
+          case 'backup_path': settings.setBackupPath(s.value); break;
+          case 'compress_backups': settings.setCompressBackups(s.value === 'true'); break;
+        }
+      });
+    };
+    loadSettingsFromDb();
+  }, []);
 
   const pickBackupPath = async () => {
     const selected = await open({ directory: true, multiple: false });

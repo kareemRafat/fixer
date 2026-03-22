@@ -34,8 +34,7 @@ pub async fn run_backup(
 
 #[tauri::command]
 pub fn delete_file(path: String) -> Result<(), String> {
-    std::fs::remove_file(path)
-        .map_err(|e| e.to_string())
+    std::fs::remove_file(path).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -56,7 +55,15 @@ pub async fn run_restore(
     mysql_data_path: String,
 ) -> Result<String, String> {
     tokio::task::spawn_blocking(move || {
-        database::run_restore(&host, port, &user, &password, &db_name, &file_path, &mysql_data_path)
+        database::run_restore(
+            &host,
+            port,
+            &user,
+            &password,
+            &db_name,
+            &file_path,
+            &mysql_data_path,
+        )
     })
     .await
     .map_err(|e| e.to_string())?
@@ -69,20 +76,16 @@ pub fn validate_backup_file(file_path: String) -> Result<bool, String> {
 
 #[tauri::command]
 pub async fn compress_file(source_path: String, dest_path: String) -> Result<(), String> {
-    tokio::task::spawn_blocking(move || {
-        database::compress_file(&source_path, &dest_path)
-    })
-    .await
-    .map_err(|e| e.to_string())?
+    tokio::task::spawn_blocking(move || database::compress_file(&source_path, &dest_path))
+        .await
+        .map_err(|e| e.to_string())?
 }
 
 #[tauri::command]
 pub async fn run_raw_backup(source_dir: String, dest_dir: String) -> Result<String, String> {
-    tokio::task::spawn_blocking(move || {
-        database::run_raw_backup(&source_dir, &dest_dir)
-    })
-    .await
-    .map_err(|e| e.to_string())?
+    tokio::task::spawn_blocking(move || database::run_raw_backup(&source_dir, &dest_dir))
+        .await
+        .map_err(|e| e.to_string())?
 }
 
 #[tauri::command]

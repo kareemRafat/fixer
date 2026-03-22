@@ -41,6 +41,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
           <SidebarItem to="/databases" icon={<Database className="h-5 w-5" />} label="Databases" />
           <SidebarItem to="/backups" icon={<History className="h-5 w-5" />} label="Backups" />
           <SidebarItem to="/diagnostics" icon={<Activity className="h-5 w-5" />} label="Diagnostics" />
+          <SidebarItem to="/schedules" icon={<History className="h-5 w-5" />} label="Schedules" />
           <SidebarItem to="/settings" icon={<Settings className="h-5 w-5" />} label="Settings" />
         </nav>
         <div className="p-4 border-t mt-auto">

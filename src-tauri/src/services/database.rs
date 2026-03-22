@@ -166,28 +166,42 @@ pub fn run_restore(
     mysql_data_path: &str,
 ) -> Result<String, String> {
     let path = std::path::Path::new(file_path);
-    
+
     // Check if it's a Raw Backup (Directory)
     if path.is_dir() {
         if mysql_data_path.is_empty() {
             return Err("MySQL Data Path is not configured in settings.".to_string());
         }
-        
+
         let target_dir = std::path::Path::new(mysql_data_path).join(db_name);
         let source_dir = file_path;
 
         // Use robocopy to restore the directory
         let output = Command::new("robocopy")
-            .args([source_dir, target_dir.to_str().unwrap(), "/E", "/MT:32", "/R:3", "/W:5"])
+            .args([
+                source_dir,
+                target_dir.to_str().unwrap(),
+                "/E",
+                "/MT:32",
+                "/R:3",
+                "/W:5",
+            ])
             .output();
 
         match output {
             Ok(output) => {
                 let code = output.status.code().unwrap_or(0);
                 if code <= 8 {
-                    Ok(format!("Raw restore of {} completed successfully.", db_name))
+                    Ok(format!(
+                        "Raw restore of {} completed successfully.",
+                        db_name
+                    ))
                 } else {
-                    Err(format!("Robocopy failed with code {}: {}", code, String::from_utf8_lossy(&output.stderr)))
+                    Err(format!(
+                        "Robocopy failed with code {}: {}",
+                        code,
+                        String::from_utf8_lossy(&output.stderr)
+                    ))
                 }
             }
             Err(e) => Err(format!("Failed to execute robocopy: {}", e)),
@@ -203,10 +217,12 @@ pub fn run_restore(
             use std::io::prelude::*;
 
             let decompressed_path = file_path.trim_end_matches(".gz").to_string();
-            let mut input = GzDecoder::new(std::fs::File::open(file_path).map_err(|e| e.to_string())?);
-            let mut output = std::fs::File::create(&decompressed_path).map_err(|e| e.to_string())?;
+            let mut input =
+                GzDecoder::new(std::fs::File::open(file_path).map_err(|e| e.to_string())?);
+            let mut output =
+                std::fs::File::create(&decompressed_path).map_err(|e| e.to_string())?;
             std::io::copy(&mut input, &mut output).map_err(|e| e.to_string())?;
-            
+
             actual_file_to_restore = decompressed_path.clone();
             temp_file = Some(decompressed_path);
         }
@@ -229,9 +245,7 @@ pub fn run_restore(
         create_db_args.push("-e".to_string());
         create_db_args.push(format!("CREATE DATABASE IF NOT EXISTS `{}`;", db_name));
 
-        let create_output = Command::new("mysql")
-            .args(&create_db_args)
-            .output();
+        let create_output = Command::new("mysql").args(&create_db_args).output();
 
         if let Ok(output) = create_output {
             if !output.status.success() {
@@ -244,13 +258,11 @@ pub fn run_restore(
 
         // 2. Specify the database to restore into
         args.push(db_name.to_string());
-        
-        let file = std::fs::File::open(&actual_file_to_restore).map_err(|e| format!("Failed to open backup file: {}", e))?;
-        
-        let output = Command::new("mysql")
-            .args(&args)
-            .stdin(file)
-            .output();
+
+        let file = std::fs::File::open(&actual_file_to_restore)
+            .map_err(|e| format!("Failed to open backup file: {}", e))?;
+
+        let output = Command::new("mysql").args(&args).stdin(file).output();
 
         // Cleanup temp file if we decompressed one
         if let Some(temp) = temp_file {
@@ -273,9 +285,13 @@ pub fn run_restore(
 pub fn validate_backup_file(file_path: &str) -> Result<bool, String> {
     let content = match std::fs::read_to_string(file_path) {
         Ok(c) => c,
-        Err(_) => return Err("لم يتم العثور على ملف النسخة الاحتياطية. قد يكون قد تم حذفه أو نقله.".to_string()),
+        Err(_) => {
+            return Err(
+                "لم يتم العثور على ملف النسخة الاحتياطية. قد يكون قد تم حذفه أو نقله.".to_string(),
+            )
+        }
     };
-    
+
     // Simple check for MySQL dump header
     if content.contains("-- MySQL dump") || content.contains("-- MariaDB dump") {
         Ok(true)
@@ -293,14 +309,14 @@ pub fn compress_file(source_path: &str, dest_path: &str) -> Result<(), String> {
         .map_err(|e| format!("Failed to open source file: {}", e))?;
     let output = std::fs::File::create(dest_path)
         .map_err(|e| format!("Failed to create destination file: {}", e))?;
-    
+
     let mut encoder = GzEncoder::new(output, Compression::default());
-    std::io::copy(&mut input, &mut encoder)
-        .map_err(|e| format!("Compression failed: {}", e))?;
-    
-    encoder.finish()
+    std::io::copy(&mut input, &mut encoder).map_err(|e| format!("Compression failed: {}", e))?;
+
+    encoder
+        .finish()
         .map_err(|e| format!("Failed to finish compression: {}", e))?;
-    
+
     Ok(())
 }
 
@@ -308,7 +324,7 @@ pub fn run_raw_backup(source_dir: &str, dest_dir: &str) -> Result<String, String
     // Basic folder copy for MySQL data directory
     // In a production app, we might want to check if the service is stopped
     // or use a more robust copy method like robocopy on Windows.
-    
+
     let source_path = std::path::Path::new(source_dir);
     let dest_path = std::path::Path::new(dest_dir);
 
@@ -326,9 +342,16 @@ pub fn run_raw_backup(source_dir: &str, dest_dir: &str) -> Result<String, String
             // robocopy exit codes 0-7 are successful
             let code = output.status.code().unwrap_or(0);
             if code <= 8 {
-                Ok(format!("Raw backup of {} completed successfully.", source_dir))
+                Ok(format!(
+                    "Raw backup of {} completed successfully.",
+                    source_dir
+                ))
             } else {
-                Err(format!("Robocopy failed with code {}: {}", code, String::from_utf8_lossy(&output.stderr)))
+                Err(format!(
+                    "Robocopy failed with code {}: {}",
+                    code,
+                    String::from_utf8_lossy(&output.stderr)
+                ))
             }
         }
         Err(e) => Err(format!("Failed to execute robocopy: {}", e)),
@@ -339,10 +362,10 @@ pub fn detect_xampp_data_path() -> Option<String> {
     let common_paths = [
         "C:\\xampp\\mysql\\data",
         "D:\\xampp\\mysql\\data",
-        "C:\\laragon\\bin\\mysql", // Laragon base
+        "C:\\laragon\\bin\\mysql",   // Laragon base
         "C:\\laragon\\bin\\mariadb", // Laragon MariaDB base
-        "C:\\wamp64\\bin\\mysql", // WAMP base
-        "C:\\wamp\\bin\\mysql", // WAMP 32-bit base
+        "C:\\wamp64\\bin\\mysql",    // WAMP base
+        "C:\\wamp\\bin\\mysql",      // WAMP 32-bit base
     ];
 
     for path in common_paths {
@@ -367,4 +390,3 @@ pub fn detect_xampp_data_path() -> Option<String> {
     }
     None
 }
-

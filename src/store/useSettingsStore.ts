@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { getDb } from "@/lib/db";
 
 interface SettingsState {
   backupPath: string;
@@ -20,11 +21,12 @@ interface SettingsState {
   setPort: (port: number) => void;
   setUser: (user: string) => void;
   setPassword: (password: string) => void;
+  syncToDb: () => Promise<void>;
 }
 
 export const useSettingsStore = create<SettingsState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       backupPath: "",
       autoDetectServices: true,
       compressBackups: false,
@@ -34,14 +36,25 @@ export const useSettingsStore = create<SettingsState>()(
       user: "root",
       password: "",
 
-      setBackupPath: (path) => set({ backupPath: path }),
+      setBackupPath: (path) => { set({ backupPath: path }); get().syncToDb(); },
       setAutoDetectServices: (enabled) => set({ autoDetectServices: enabled }),
-      setCompressBackups: (enabled) => set({ compressBackups: enabled }),
+      setCompressBackups: (enabled) => { set({ compressBackups: enabled }); get().syncToDb(); },
       setMysqlDataPath: (path) => set({ mysqlDataPath: path }),
-      setHost: (host) => set({ host }),
-      setPort: (port) => set({ port: Number(port) }),
-      setUser: (user) => set({ user }),
-      setPassword: (password) => set({ password }),
+      setHost: (host) => { set({ host }); get().syncToDb(); },
+      setPort: (port) => { set({ port: Number(port) }); get().syncToDb(); },
+      setUser: (user) => { set({ user }); get().syncToDb(); },
+      setPassword: (password) => { set({ password }); get().syncToDb(); },
+      
+      syncToDb: async () => {
+        const state = get();
+        const db = await getDb();
+        await db.execute("UPDATE settings SET value = $1 WHERE key = 'host'", [state.host]);
+        await db.execute("UPDATE settings SET value = $1 WHERE key = 'port'", [state.port.toString()]);
+        await db.execute("UPDATE settings SET value = $1 WHERE key = 'user'", [state.user]);
+        await db.execute("UPDATE settings SET value = $1 WHERE key = 'password'", [state.password]);
+        await db.execute("UPDATE settings SET value = $1 WHERE key = 'backup_path'", [state.backupPath]);
+        await db.execute("UPDATE settings SET value = $1 WHERE key = 'compress_backups'", [state.compressBackups.toString()]);
+      }
     }),
     {
       name: "backup-manager-settings",

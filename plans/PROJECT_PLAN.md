@@ -57,9 +57,9 @@ This document outlines the detailed milestones and tasks for the development of 
 - [x] **Frontend**: Build the "Diagnostics" page with "Auto-Fix" buttons.
 
 ## Milestone 9: Automation & Notifications
-- [ ] **Backend**: Implement a basic Rust scheduler service for recurring backups.
-- [ ] **Frontend**: Add "Scheduling" UI to the Settings/Database page.
-- [ ] Integrate Tauri system notifications for backup results.
+- [x] **Backend**: Implement a basic Rust scheduler service for recurring backups.
+- [x] **Frontend**: Add "Scheduling" UI to the Settings/Database page.
+- [x] Integrate Tauri system notifications for backup results.
 
 ## Milestone 10: Polishing & Distribution
 - [ ] Add dark/light mode support.

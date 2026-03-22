@@ -1,5 +1,5 @@
-use std::process::Command;
 use serde::{Deserialize, Serialize};
+use std::process::Command;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PortStatus {
@@ -26,7 +26,7 @@ pub fn check_port_usage(port: u16) -> PortStatus {
                     let name_output = Command::new("tasklist")
                         .args(["/FI", &format!("PID eq {}", pid), "/NH", "/FO", "CSV"])
                         .output();
-                    
+
                     let mut process_name = None;
                     if let Ok(name_out) = name_output {
                         let name_stdout = String::from_utf8_lossy(&name_out.stdout);
@@ -89,21 +89,27 @@ pub fn find_config_file(service_type: &str) -> Option<String> {
                 format!("{}\\mysql\\my.ini", base),
             ];
             for p in paths {
-                if std::path::Path::new(&p).exists() { return Some(p); }
+                if std::path::Path::new(&p).exists() {
+                    return Some(p);
+                }
             }
         } else if service_type == "apache" {
-            let paths = [
-                format!("{}\\apache\\conf\\httpd.conf", base),
-            ];
+            let paths = [format!("{}\\apache\\conf\\httpd.conf", base)];
             for p in paths {
-                if std::path::Path::new(&p).exists() { return Some(p); }
+                if std::path::Path::new(&p).exists() {
+                    return Some(p);
+                }
             }
         }
     }
     None
 }
 
-pub fn fix_port_conflict(service_type: &str, old_port: u16, new_port: u16) -> Result<String, String> {
+pub fn fix_port_conflict(
+    service_type: &str,
+    old_port: u16,
+    new_port: u16,
+) -> Result<String, String> {
     let config_path = find_config_file(service_type)
         .ok_or_else(|| format!("Could not find configuration file for {}.", service_type))?;
 
@@ -114,15 +120,21 @@ pub fn fix_port_conflict(service_type: &str, old_port: u16, new_port: u16) -> Re
     // e.g., "port = 3306" or "Listen 80"
     let old_port_str = old_port.to_string();
     let new_port_str = new_port.to_string();
-    
+
     let new_content = content.replace(&old_port_str, &new_port_str);
 
     if new_content == content {
-        return Err(format!("Could not find port {} in {}", old_port, config_path));
+        return Err(format!(
+            "Could not find port {} in {}",
+            old_port, config_path
+        ));
     }
 
     std::fs::write(&config_path, new_content)
         .map_err(|e| format!("Failed to write updated config: {}", e))?;
 
-    Ok(format!("Successfully updated {} port to {} in {}", service_type, new_port, config_path))
+    Ok(format!(
+        "Successfully updated {} port to {} in {}",
+        service_type, new_port, config_path
+    ))
 }
