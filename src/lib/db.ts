@@ -14,7 +14,8 @@ export const getDb = async () => {
         timestamp TEXT NOT NULL,
         file_size INTEGER NOT NULL,
         status TEXT NOT NULL,
-        file_path TEXT NOT NULL
+        file_path TEXT NOT NULL,
+        trigger_type TEXT DEFAULT 'manual' -- "manual" or "scheduled"
       )
     `);
 
@@ -59,6 +60,9 @@ export const getDb = async () => {
       await db.execute("ALTER TABLE backups ADD COLUMN backup_type TEXT");
     } catch (e) {}
     try {
+      await db.execute("ALTER TABLE backups ADD COLUMN trigger_type TEXT DEFAULT 'manual'");
+    } catch (e) {}
+    try {
       await db.execute("ALTER TABLE schedules ADD COLUMN backup_type TEXT DEFAULT 'sql'");
     } catch (e) {}
   }
@@ -74,25 +78,13 @@ export interface BackupRecord {
   file_size: number;
   status: string;
   file_path: string;
-}
-
-export interface Schedule {
-  id: number;
-  name: string;
-  databases: string;
-  frequency: "daily" | "weekly" | "monthly";
-  time: string;
-  day_of_week?: number;
-  day_of_month?: number;
-  backup_type: "sql" | "raw";
-  is_active: boolean;
-  last_run?: string;
+  trigger_type: "manual" | "scheduled";
 }
 
 export const addBackup = async (backup: Omit<BackupRecord, "id">) => {
   const database = await getDb();
   await database.execute(
-    "INSERT INTO backups (database_name, databases, backup_type, timestamp, file_size, status, file_path) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+    "INSERT INTO backups (database_name, databases, backup_type, timestamp, file_size, status, file_path, trigger_type) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
     [
       backup.database_name, 
       backup.databases || null, 
@@ -100,7 +92,8 @@ export const addBackup = async (backup: Omit<BackupRecord, "id">) => {
       backup.timestamp, 
       backup.file_size, 
       backup.status, 
-      backup.file_path
+      backup.file_path,
+      backup.trigger_type || "manual"
     ]
   );
 };

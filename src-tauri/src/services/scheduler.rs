@@ -1,4 +1,4 @@
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Manager, Emitter};
 use std::time::Duration;
 use tokio::time::sleep;
 use sqlx::sqlite::SqlitePool;
@@ -119,7 +119,7 @@ async fn check_and_run_schedules(app: &AppHandle, pool: &SqlitePool) -> Result<(
 
                     // Record in database
                     let now_iso = Local::now().to_rfc3339();
-                    sqlx::query("INSERT INTO backups (database_name, databases, backup_type, timestamp, file_size, status, file_path) VALUES (?, ?, ?, ?, ?, ?, ?)")
+                    sqlx::query("INSERT INTO backups (database_name, databases, backup_type, timestamp, file_size, status, file_path, trigger_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
                         .bind(db_name_for_file)
                         .bind(&schedule.databases)
                         .bind(&backup_type)
@@ -127,6 +127,7 @@ async fn check_and_run_schedules(app: &AppHandle, pool: &SqlitePool) -> Result<(
                         .bind(file_size as i64)
                         .bind("Success")
                         .bind(&final_path)
+                        .bind("scheduled")
                         .execute(pool)
                         .await?;
 
@@ -143,13 +144,16 @@ async fn check_and_run_schedules(app: &AppHandle, pool: &SqlitePool) -> Result<(
                         .title("Scheduled Backup Success")
                         .body(format!("Backup for {} completed successfully.", schedule.name))
                         .show()?;
+
+                    // Emit event for UI reload
+                    let _ = app.emit("backup-finished", ());
                 },
                 Err(e) => {
                     eprintln!("Scheduled backup failed: {}", e);
                     
                     // Record failure
                     let now_iso = Local::now().to_rfc3339();
-                    sqlx::query("INSERT INTO backups (database_name, databases, backup_type, timestamp, file_size, status, file_path) VALUES (?, ?, ?, ?, ?, ?, ?)")
+                    sqlx::query("INSERT INTO backups (database_name, databases, backup_type, timestamp, file_size, status, file_path, trigger_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
                         .bind(db_name_for_file)
                         .bind(&schedule.databases)
                         .bind(&backup_type)
@@ -157,6 +161,7 @@ async fn check_and_run_schedules(app: &AppHandle, pool: &SqlitePool) -> Result<(
                         .bind(0)
                         .bind(format!("Failed: {}", e))
                         .bind("")
+                        .bind("scheduled")
                         .execute(pool)
                         .await?;
 
@@ -165,6 +170,9 @@ async fn check_and_run_schedules(app: &AppHandle, pool: &SqlitePool) -> Result<(
                         .title("Scheduled Backup Failed")
                         .body(format!("Backup for {} failed: {}", schedule.name, e))
                         .show()?;
+
+                    // Emit event for UI reload (even on failure to show the failed record)
+                    let _ = app.emit("backup-finished", ());
                 }
             }
         }

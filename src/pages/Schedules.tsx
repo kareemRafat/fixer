@@ -8,15 +8,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
+import { 
+    AlertDialog, 
+    AlertDialogAction, 
+    AlertDialogCancel, 
+    AlertDialogContent, 
+    AlertDialogDescription, 
+    AlertDialogFooter, 
+    AlertDialogHeader, 
+    AlertDialogTitle 
+} from '@/components/ui/alert-dialog';
 import { getSchedules, addSchedule, updateSchedule, deleteSchedule, Schedule } from '@/lib/db';
 import { invoke } from "@tauri-apps/api/core";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { toast } from 'sonner';
-import { ChevronDown, ChevronRight, Database as DbIcon } from "lucide-react";
+import { ChevronDown, ChevronRight, Database as DbIcon, Trash2 } from "lucide-react";
 
 const Schedules: React.FC = () => {
     const [schedules, setSchedules] = useState<Schedule[]>([]);
     const [isFormOpen, setIsFormOpen] = useState(false);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [scheduleToDelete, setScheduleToDelete] = useState<number | null>(null);
     const [currentSchedule, setCurrentSchedule] = useState<Partial<Schedule> | null>(null);
     const [availableDatabases, setAvailableDatabases] = useState<string[]>([]);
     const [expandedRows, setExpandedRows] = useState<number[]>([]);
@@ -72,13 +84,23 @@ const Schedules: React.FC = () => {
         }
     };
 
-    const handleDelete = async (id: number) => {
+    const handleDeleteClick = (id: number) => {
+        setScheduleToDelete(id);
+        setIsDeleteDialogOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (scheduleToDelete === null) return;
+        
         try {
-            await deleteSchedule(id);
+            await deleteSchedule(scheduleToDelete);
             toast.success('Schedule deleted successfully!');
             loadSchedules();
         } catch (error) {
             toast.error('Failed to delete schedule.');
+        } finally {
+            setIsDeleteDialogOpen(false);
+            setScheduleToDelete(null);
         }
     };
 
@@ -106,7 +128,7 @@ const Schedules: React.FC = () => {
         <div className="p-6 space-y-6">
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold">Schedules</h1>
-                <Button onClick={() => openForm()}>Add Schedule</Button>
+                <Button onClick={() => openForm()} className="rounded-md">Add Schedule</Button>
             </div>
 
             <Card>
@@ -127,55 +149,63 @@ const Schedules: React.FC = () => {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {schedules.map((s) => {
-                                const isExpanded = expandedRows.includes(s.id);
-                                const dbList = s.databases.split(',').filter(Boolean);
-                                
-                                return (
-                                    <Fragment key={s.id}>
-                                        <TableRow className="hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => toggleRow(s.id)}>
-                                            <TableCell>
-                                                {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                                            </TableCell>
-                                            <TableCell className="font-medium">{s.name}</TableCell>
-                                            <TableCell>
-                                                <span className="font-medium text-sm">
-                                                    {dbList.length} database(s)
-                                                </span>
-                                            </TableCell>
-                                            <TableCell className="capitalize">{s.frequency}</TableCell>
-                                            <TableCell>{s.time}</TableCell>
-                                            <TableCell onClick={(e) => e.stopPropagation()}>
-                                                <Switch checked={s.is_active} onCheckedChange={async (checked) => {
-                                                    await updateSchedule({ ...s, is_active: checked });
-                                                    loadSchedules();
-                                                }} />
-                                            </TableCell>
-                                            <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                                                <Button variant="outline" size="sm" className="mr-2" onClick={() => openForm(s)}>Edit</Button>
-                                                <Button variant="destructive" size="sm" onClick={() => handleDelete(s.id)}>Delete</Button>
-                                            </TableCell>
-                                        </TableRow>
-                                        {isExpanded && (
-                                            <TableRow className="bg-muted/30">
-                                                <TableCell colSpan={7} className="py-4">
-                                                    <div className="pl-12 space-y-2">
-                                                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Included Databases:</h4>
-                                                        <div className="flex flex-wrap gap-2">
-                                                            {dbList.map((db, idx) => (
-                                                                <div key={idx} className="flex items-center gap-1.5 bg-background border rounded-md px-2 py-1 text-sm shadow-sm">
-                                                                    <DbIcon className="h-3 w-3 text-primary" />
-                                                                    <span>{db}</span>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    </div>
+                            {schedules.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={7} className="text-center py-10 text-muted-foreground">
+                                        No Backup Schedules
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                schedules.map((s) => {
+                                    const isExpanded = expandedRows.includes(s.id);
+                                    const dbList = s.databases.split(',').filter(Boolean);
+                                    
+                                    return (
+                                        <Fragment key={s.id}>
+                                            <TableRow className="hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => toggleRow(s.id)}>
+                                                <TableCell>
+                                                    {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                                                </TableCell>
+                                                <TableCell className="font-medium">{s.name}</TableCell>
+                                                <TableCell>
+                                                    <span className="font-medium text-sm">
+                                                        {dbList.length} database(s)
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell className="capitalize">{s.frequency}</TableCell>
+                                                <TableCell>{s.time}</TableCell>
+                                                <TableCell onClick={(e) => e.stopPropagation()}>
+                                                    <Switch checked={s.is_active} onCheckedChange={async (checked) => {
+                                                        await updateSchedule({ ...s, is_active: checked });
+                                                        loadSchedules();
+                                                    }} />
+                                                </TableCell>
+                                                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                                                    <Button variant="outline" size="sm" className="mr-2 rounded-md" onClick={() => openForm(s)}>Edit</Button>
+                                                    <Button variant="destructive" size="sm" className="rounded-md" onClick={() => handleDeleteClick(s.id)}>Delete</Button>
                                                 </TableCell>
                                             </TableRow>
-                                        )}
-                                    </Fragment>
-                                );
-                            })}
+                                            {isExpanded && (
+                                                <TableRow className="bg-muted/30">
+                                                    <TableCell colSpan={7} className="py-4">
+                                                        <div className="pl-12 space-y-2">
+                                                            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Included Databases:</h4>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                {dbList.map((db, idx) => (
+                                                                    <div key={idx} className="flex items-center gap-1.5 bg-background border rounded-md px-2 py-1 text-sm shadow-sm">
+                                                                        <DbIcon className="h-3 w-3 text-primary" />
+                                                                        <span>{db}</span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            )}
+                                        </Fragment>
+                                    );
+                                })
+                            )}
                         </TableBody>
                     </Table>
                 </CardContent>
@@ -254,11 +284,28 @@ const Schedules: React.FC = () => {
                             <Input id="time" type="time" value={currentSchedule?.time} onChange={e => setCurrentSchedule(s => ({...s, time: e.target.value}))} className="col-span-3" />
                         </div>
                         <div className="flex justify-end pt-4">
-                            <Button onClick={handleSave}>Save</Button>
+                            <Button onClick={handleSave} className="rounded-md">Save</Button>
                         </div>
                     </div>
                 </DialogContent>
             </Dialog>
+
+            <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This will permanently delete the backup schedule. This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel className="rounded-md">Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-md">
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 };

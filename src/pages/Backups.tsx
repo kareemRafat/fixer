@@ -1,7 +1,9 @@
 import { useState, useEffect, Fragment } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import { getBackups, deleteBackupRecord, BackupRecord } from "@/lib/db";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   Table,
   TableHeader,
@@ -137,6 +139,14 @@ const Backups = () => {
 
   useEffect(() => {
     fetchBackups();
+
+    const unlisten = listen("backup-finished", () => {
+      fetchBackups();
+    });
+
+    return () => {
+      unlisten.then((f) => f());
+    };
   }, []);
 
   return (
@@ -161,6 +171,7 @@ const Backups = () => {
             <TableRow>
               <TableHead className="w-[40px]"></TableHead>
               <TableHead>Database</TableHead>
+              <TableHead>Source</TableHead>
               <TableHead>Timestamp</TableHead>
               <TableHead>Size</TableHead>
               <TableHead>Status</TableHead>
@@ -202,6 +213,19 @@ const Backups = () => {
                       </TableCell>
                       <TableCell className="font-medium">
                         {backup.database_name}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "capitalize font-normal",
+                            backup.trigger_type === "scheduled"
+                              ? "border-blue-200 bg-blue-50 text-blue-700"
+                              : "border-gray-200 bg-gray-50 text-gray-700"
+                          )}
+                        >
+                          {backup.trigger_type || "manual"}
+                        </Badge>
                       </TableCell>
                       <TableCell>
                         {new Date(backup.timestamp).toLocaleDateString(
@@ -256,7 +280,7 @@ const Backups = () => {
                     </TableRow>
                     {isExpanded && (
                       <TableRow className="bg-muted/30">
-                        <TableCell colSpan={6} className="py-0">
+                        <TableCell colSpan={7} className="py-0">
                           <div className="p-4 pl-12 grid grid-cols-2 gap-8">
                             <div className="space-y-2">
                               <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -313,7 +337,7 @@ const Backups = () => {
               })
             ) : (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center">
+                <TableCell colSpan={7} className="h-24 text-center">
                   No backup history found.
                 </TableCell>
               </TableRow>

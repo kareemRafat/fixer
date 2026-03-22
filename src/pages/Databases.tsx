@@ -203,6 +203,7 @@ const Databases = () => {
         file_size: fileSize,
         status: "Success",
         file_path: finalPath,
+        trigger_type: "manual",
       });
 
       toast.success(result);
@@ -221,6 +222,7 @@ const Databases = () => {
         file_size: 0,
         status: "Failed",
         file_path: "N/A",
+        trigger_type: "manual",
       });
     } finally {
       setIsBackingUp(false);
