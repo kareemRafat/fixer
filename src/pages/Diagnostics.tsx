@@ -27,7 +27,7 @@ import {
 import { Input } from "@/components/ui/input";
 
 interface PortStatus {
-  port: u16;
+  port: number;
   is_in_use: boolean;
   process_name: string | null;
   pid: number | null;

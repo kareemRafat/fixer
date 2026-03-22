@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { LayoutDashboard, Database, History, Activity, Settings, Menu } from "lucide-react";
+import { ThemeToggle } from "../ThemeToggle";
 
 interface SidebarItemProps {
   to: string;
@@ -45,9 +46,12 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
           <SidebarItem to="/settings" icon={<Settings className="h-5 w-5" />} label="Settings" />
         </nav>
         <div className="p-4 border-t mt-auto">
-          <div className="flex items-center gap-3 px-3 py-2 text-sm text-muted-foreground">
-            <span className="h-2 w-2 rounded-full bg-green-500"></span>
-            System Ready
+          <div className="flex items-center justify-between gap-3 px-3 py-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-3">
+                <span className="h-2 w-2 rounded-full bg-green-500"></span>
+                System Ready
+            </div>
+            <ThemeToggle />
           </div>
         </div>
       </aside>

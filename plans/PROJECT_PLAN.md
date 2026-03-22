@@ -60,9 +60,10 @@ This document outlines the detailed milestones and tasks for the development of 
 - [x] **Backend**: Implement a basic Rust scheduler service for recurring backups.
 - [x] **Frontend**: Add "Scheduling" UI to the Settings/Database page.
 - [x] Integrate Tauri system notifications for backup results.
+- [x] Implement "Catch-up Logic" for missed backups upon application startup.
 
 ## Milestone 10: Polishing & Distribution
-- [ ] Add dark/light mode support.
+- [x] Add dark/light mode support.
 - [ ] Conduct final UI/UX audit using shadcn/ui components.
 - [ ] Configure `tauri.conf.json` for production (icons, bundle identifiers).
 - [ ] Build and test the installer for the target OS (Windows).

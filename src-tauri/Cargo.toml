@@ -30,3 +30,8 @@ tauri-plugin-notification = "2"
 chrono = "0.4.44"
 sqlx = { version = "0.8.0", features = ["sqlite", "runtime-tokio"] }
 
+[profile.release]
+strip = true       # Automatically strip symbols from the binary
+lto = true         # Link Time Optimization (smaller, faster)
+opt-level = "z"    # Optimize for size
+

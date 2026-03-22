@@ -220,18 +220,18 @@ const Databases = () => {
         </Button>
       </div>
 
-      <div className="flex items-center justify-between gap-4 py-3 px-4 bg-secondary/20 rounded-lg border">
-        <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mr-2">
-          Services :
+      <div className="flex flex-wrap items-center gap-4 py-4 px-5 bg-secondary/20 rounded-lg border">
+        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          Services
         </span>
         {services.length === 0 ? (
           <span className="text-sm text-muted-foreground italic">None detected</span>
         ) : (
           services.map((s, i) => (
-            <div key={i} className="flex items-center gap-2 bg-background px-5 py-1 rounded-lg border text-sm shadow-sm">
+            <div key={i} className="flex items-center gap-2 bg-background px-4 py-1.5 rounded-full border text-sm shadow-sm">
               <div className="h-2 w-2 rounded-full bg-green-500"></div>
               <span className="font-medium">{s.name}</span>
-              <span className="text-muted-foreground text-sm">: {s.port}</span>
+              <span className="text-muted-foreground text-xs">: {s.port}</span>
             </div>
           ))
         )}

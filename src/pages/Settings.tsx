@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Label } from "@/components/ui/label";
 import { open } from "@tauri-apps/plugin-dialog";
 import { FolderOpen, Save, Shield } from "lucide-react";
 import { toast } from "sonner";
@@ -85,7 +86,7 @@ const Settings = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground uppercase">Default Backup Destination</label>
+              <Label className="text-muted-foreground uppercase">Default Backup Destination</Label>
               <div className="flex gap-2">
                 <Input value={settings.backupPath} readOnly placeholder="No path selected" />
                 <Button variant="outline" size="icon" onClick={pickBackupPath}>
@@ -101,9 +102,9 @@ const Settings = () => {
                 onCheckedChange={(checked) => settings.setCompressBackups(!!checked)} 
               />
               <div className="grid gap-1.5 leading-none">
-                <label htmlFor="compress" className="text-sm font-medium leading-none cursor-pointer">
+                <Label htmlFor="compress" className="cursor-pointer">
                   Enable Backup Compression (Gzip)
-                </label>
+                </Label>
                 <p className="text-sm text-muted-foreground">
                   Automatically compress .sql files to save disk space.
                 </p>
@@ -120,7 +121,7 @@ const Settings = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground uppercase">MySQL Data Directory</label>
+              <Label className="text-muted-foreground uppercase">MySQL Data Directory</Label>
               <div className="flex gap-2">
                 <Input value={settings.mysqlDataPath} readOnly placeholder="e.g., C:\ProgramData\MySQL\MySQL Server 8.0\Data" />
                 <Button variant="outline" size="icon" onClick={pickMysqlDataPath} title="Select Folder">
@@ -146,19 +147,19 @@ const Settings = () => {
           <CardContent>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground uppercase">Host</label>
+                <Label className="text-muted-foreground uppercase">Host</Label>
                 <Input value={settings.host} onChange={(e) => settings.setHost(e.target.value)} />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground uppercase">Port</label>
+                <Label className="text-muted-foreground uppercase">Port</Label>
                 <Input type="number" value={settings.port} onChange={(e) => settings.setPort(Number(e.target.value))} />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground uppercase">Username</label>
+                <Label className="text-muted-foreground uppercase">Username</Label>
                 <Input value={settings.user} onChange={(e) => settings.setUser(e.target.value)} />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground uppercase">Password</label>
+                <Label className="text-muted-foreground uppercase">Password</Label>
                 <Input type="password" value={settings.password} onChange={(e) => settings.setPassword(e.target.value)} placeholder="••••••••" />
               </div>
             </div>
