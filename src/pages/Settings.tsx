@@ -8,9 +8,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { open } from "@tauri-apps/plugin-dialog";
-import { FolderOpen, Save, Shield } from "lucide-react";
+import { FolderOpen, Save, Shield, Palette } from "lucide-react";
 import { toast } from "sonner";
 import { getDb } from "@/lib/db";
+
+const COLOR_PRESETS = [
+  { name: "Teal", value: "188.7 94.5% 30%", bg: "bg-[#047481]" },
+  { name: "Blue", value: "221.2 83.2% 53.3%", bg: "bg-[#3b82f6]" },
+  { name: "Indigo", value: "239 84% 67%", bg: "bg-[#818cf8]" },
+  { name: "Rose", value: "346.8 77.2% 49.8%", bg: "bg-[#e11d48]" },
+  { name: "Orange", value: "24.6 95% 53.1%", bg: "bg-[#f97316]" },
+  { name: "Green", value: "142.1 76.2% 36.3%", bg: "bg-[#16a34a]" },
+  { name: "Slate", value: "var(--user-slate)", bg: "bg-[#1e293b]" },
+];
 
 const Settings = () => {
   const settings = useSettingsStore();
@@ -108,6 +118,46 @@ const Settings = () => {
                 <p className="text-sm text-muted-foreground">
                   Automatically compress .sql files to save disk space.
                 </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Appearance Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Appearance</CardTitle>
+            <CardDescription>Customize the application's primary theme color.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-3">
+              <Label className="text-muted-foreground uppercase flex items-center gap-2">
+                <Palette className="h-4 w-4" />
+                Primary Theme Color
+              </Label>
+              <div className="flex flex-wrap gap-3">
+                {COLOR_PRESETS.map((color) => (
+                  <button
+                    key={color.name}
+                    onClick={() => settings.setPrimaryColor(color.value)}
+                    className={`group relative flex flex-col items-center gap-1.5 p-2 rounded-xl border-2 transition-all ${
+                      settings.primaryColor === color.value 
+                        ? "border-primary bg-primary/5 shadow-sm" 
+                        : "border-transparent hover:border-muted-foreground/20"
+                    }`}
+                  >
+                    <div className={`h-8 w-8 rounded-full ${color.bg} shadow-inner flex items-center justify-center`}>
+                      {settings.primaryColor === color.value && (
+                        <div className="h-2 w-2 rounded-full bg-white shadow-sm" />
+                      )}
+                    </div>
+                    <span className={`text-[10px] font-bold uppercase tracking-tighter ${
+                      settings.primaryColor === color.value ? "text-primary" : "text-muted-foreground"
+                    }`}>
+                      {color.name}
+                    </span>
+                  </button>
+                ))}
               </div>
             </div>
           </CardContent>

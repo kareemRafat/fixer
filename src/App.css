@@ -34,6 +34,9 @@
     --ring: 188.7 94.5% 30%;
 
     --radius: 0.5rem;
+
+    /* Mode-aware Slate */
+    --user-slate: 222.2 47.4% 11.2%;
   }
 
   .dark {
@@ -64,6 +67,9 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 188.7 94.5% 30%;
+
+    /* Mode-aware Slate - Lighter in dark mode */
+    --user-slate: 215.4 16.3% 65.9%;
   }
 }
 

@@ -12,6 +12,7 @@ interface SettingsState {
   port: number;
   user: string;
   password: string;
+  primaryColor: string;
   
   setBackupPath: (path: string) => void;
   setAutoDetectServices: (enabled: boolean) => void;
@@ -21,6 +22,7 @@ interface SettingsState {
   setPort: (port: number) => void;
   setUser: (user: string) => void;
   setPassword: (password: string) => void;
+  setPrimaryColor: (color: string) => void;
   syncToDb: () => Promise<void>;
 }
 
@@ -35,6 +37,7 @@ export const useSettingsStore = create<SettingsState>()(
       port: 3306,
       user: "root",
       password: "",
+      primaryColor: "188.7 94.5% 30%", // Teal Default
 
       setBackupPath: (path) => { set({ backupPath: path }); get().syncToDb(); },
       setAutoDetectServices: (enabled) => set({ autoDetectServices: enabled }),
@@ -44,6 +47,12 @@ export const useSettingsStore = create<SettingsState>()(
       setPort: (port) => { set({ port: Number(port) }); get().syncToDb(); },
       setUser: (user) => { set({ user }); get().syncToDb(); },
       setPassword: (password) => { set({ password }); get().syncToDb(); },
+      setPrimaryColor: (color) => {
+        set({ primaryColor: color });
+        document.documentElement.style.setProperty('--primary', color);
+        document.documentElement.style.setProperty('--ring', color);
+        document.documentElement.style.setProperty('--accent', color);
+      },
       
       syncToDb: async () => {
         const state = get();

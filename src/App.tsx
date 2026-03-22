@@ -8,9 +8,19 @@ import Schedules from "./pages/Schedules";
 import Settings from "./pages/Settings";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
+import { useSettingsStore } from "@/store/useSettingsStore";
+import { useEffect } from "react";
 import "./App.css";
 
 function App() {
+  const primaryColor = useSettingsStore((state) => state.primaryColor);
+
+  useEffect(() => {
+    document.documentElement.style.setProperty("--primary", primaryColor);
+    document.documentElement.style.setProperty("--ring", primaryColor);
+    document.documentElement.style.setProperty("--accent", primaryColor);
+  }, [primaryColor]);
+
   return (
     <Router>
       <TooltipProvider>
