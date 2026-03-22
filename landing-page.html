@@ -6,6 +6,7 @@
     <title>DB Guard | Ultimate MySQL Backup Manager</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
         .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); }
@@ -20,7 +21,7 @@
             <div class="flex justify-between h-16 items-center">
                 <div class="flex items-center gap-2">
                     <div class="w-8 h-8 bg-cyan-600 rounded-lg flex items-center justify-center">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="螺旋 D4 7v10c0 1.105 1.79 2 4 2s4-.895 4-2V7M4 7c0 1.105 1.79 2 4 2s4-.895 4-2M4 7c0-1.105 1.79-2 4-2s4 .895 4 2m0 5c0 1.105-1.79 2-4 2s-4-.895-4-2"></path></svg>
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 1.105 1.79 2 4 2s4-.895 4-2V7M4 7c0 1.105 1.79 2 4 2s4-.895 4-2M4 7c0-1.105 1.79-2 4-2s4 .895 4 2m0 5c0 1.105-1.79 2-4 2s-4-.895-4-2"></path></svg>
                     </div>
                     <span class="text-xl font-extrabold tracking-tight text-slate-900">DB<span class="text-cyan-600">Guard</span></span>
                 </div>
@@ -53,32 +54,303 @@
                 <a href="#dashboard" class="w-full sm:w-auto px-8 py-4 rounded-2xl text-lg font-bold text-slate-600 hover:bg-white transition-all border border-transparent hover:border-slate-200">Learn More</a>
             </div>
 
-            <!-- Mockup Placeholder -->
-            <div class="mt-20 relative max-w-5xl mx-auto">
-                <div class="absolute inset-0 bg-cyan-500/20 blur-3xl rounded-full scale-75"></div>
-                <div class="relative bg-slate-900 rounded-2xl shadow-2xl border border-slate-800 p-2 lg:p-4 overflow-hidden">
-                    <div class="bg-slate-800 h-6 w-full rounded-t-lg mb-2 flex items-center gap-1.5 px-3">
-                        <div class="w-2.5 h-2.5 rounded-full bg-red-500"></div>
-                        <div class="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
-                        <div class="w-2.5 h-2.5 rounded-full bg-green-500"></div>
+            <!-- Interactive Mockup Placeholder -->
+            <div class="mt-20 relative max-w-5xl mx-auto" x-data="{ activePage: 'databases' }">
+                <div class="absolute inset-0 bg-cyan-500/10 blur-3xl rounded-full scale-75"></div>
+                <div class="relative bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+                    <!-- Title Bar -->
+                    <div class="bg-slate-50 border-b border-slate-200 h-10 flex items-center justify-between px-4">
+                        <div class="flex gap-1.5">
+                            <div class="w-3 h-3 rounded-full bg-slate-200"></div>
+                            <div class="w-3 h-3 rounded-full bg-slate-200"></div>
+                            <div class="w-3 h-3 rounded-full bg-slate-200"></div>
+                        </div>
+                        <div class="text-[10px] font-semibold text-slate-500 uppercase tracking-tight">DB Guard Desktop</div>
+                        <div class="w-12"></div>
                     </div>
-                    <div class="bg-white rounded-lg aspect-video flex items-center justify-center overflow-hidden">
-                        <!-- Simulated UI -->
-                        <div class="w-full h-full flex bg-slate-50">
-                            <div class="w-48 border-r border-slate-200 p-4 space-y-4 hidden lg:block">
-                                <div class="h-4 bg-slate-200 rounded-full w-3/4"></div>
-                                <div class="h-4 bg-slate-100 rounded-full w-full"></div>
-                                <div class="h-4 bg-slate-100 rounded-full w-5/6"></div>
-                                <div class="h-4 bg-cyan-100 rounded-full w-full"></div>
+
+                    <div class="bg-white aspect-video flex overflow-hidden">
+                        <!-- Sidebar (Matching app style) -->
+                        <div class="w-44 border-r border-slate-100 p-4 space-y-1 hidden lg:block bg-slate-50/50">
+                            <div class="mb-6 px-2 flex items-center gap-2">
+                                <div class="w-6 h-6 bg-cyan-600 rounded flex items-center justify-center text-white font-bold text-[10px]">DB</div>
+                                <span class="text-xs font-bold text-slate-900 tracking-tight">DB Guard</span>
                             </div>
-                            <div class="flex-1 p-8 space-y-6">
-                                <div class="grid grid-cols-3 gap-4">
-                                    <div class="h-24 bg-white rounded-xl border border-slate-200 shadow-sm"></div>
-                                    <div class="h-24 bg-white rounded-xl border border-slate-200 shadow-sm"></div>
-                                    <div class="h-24 bg-white rounded-xl border border-slate-200 shadow-sm"></div>
+                            
+                            <div @click="activePage = 'dashboard'" :class="activePage === 'dashboard' ? 'bg-white shadow-sm text-cyan-600' : 'text-slate-500 hover:bg-slate-100'" class="flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-all text-[11px] font-medium">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg> Dashboard
+                            </div>
+                            <div @click="activePage = 'databases'" :class="activePage === 'databases' ? 'bg-white shadow-sm text-cyan-600' : 'text-slate-500 hover:bg-slate-100'" class="flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-all text-[11px] font-medium">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 1.105 1.79 2 4 2s4-.895 4-2V7M4 7c0 1.105 1.79 2 4 2s4-.895 4-2M4 7c0-1.105 1.79-2 4-2s4 .895 4 2m0 5c0 1.105-1.79 2-4 2s-4-.895-4-2"/></svg> Databases
+                            </div>
+                            <div @click="activePage = 'backups'" :class="activePage === 'backups' ? 'bg-white shadow-sm text-cyan-600' : 'text-slate-500 hover:bg-slate-100'" class="flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-all text-[11px] font-medium">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Backups
+                            </div>
+                            <div @click="activePage = 'diagnostics'" :class="activePage === 'diagnostics' ? 'bg-white shadow-sm text-cyan-600' : 'text-slate-500 hover:bg-slate-100'" class="flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-all text-[11px] font-medium">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> Diagnostics
+                            </div>
+                        </div>
+                        
+                        <!-- Content Wrapper -->
+                        <div class="flex-1 bg-white p-6 overflow-y-auto space-y-6">
+                            
+                            <!-- Databases Page -->
+                            <template x-if="activePage === 'databases'">
+                                <div class="space-y-6">
+                                    <div class="flex justify-between items-center">
+                                        <h1 class="text-xl font-bold text-slate-900 tracking-tight">Databases</h1>
+                                        <button class="px-3 py-1.5 border border-slate-200 rounded-md text-[10px] font-semibold hover:bg-slate-50 transition-colors flex items-center gap-2">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Refresh
+                                        </button>
+                                    </div>
+
+                                    <!-- Service Banner -->
+                                    <div class="flex flex-wrap justify-between items-center gap-4 py-3 px-4 bg-slate-50 border rounded-lg">
+                                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Services</span>
+                                        <div class="flex items-center gap-2 bg-white px-3 py-1 rounded border text-[10px] shadow-sm">
+                                            <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                                            <span class="font-bold text-slate-700">mysql</span>
+                                            <span class="text-slate-400 font-bold">: 3306</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Connection Form -->
+                                    <div class="p-4 border border-slate-200 rounded-xl shadow-sm bg-white space-y-4">
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div class="space-y-1">
+                                                <label class="text-[8px] font-bold text-slate-400 uppercase">Host</label>
+                                                <div class="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded text-[10px] text-slate-700">localhost</div>
+                                            </div>
+                                            <div class="space-y-1">
+                                                <label class="text-[8px] font-bold text-slate-400 uppercase">Port</label>
+                                                <div class="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded text-[10px] text-slate-700">3306</div>
+                                            </div>
+                                        </div>
+                                        <button class="w-full h-9 bg-slate-900 text-white rounded-lg text-[10px] font-bold hover:bg-slate-800 transition-all">Check Databases</button>
+                                    </div>
+
+                                    <!-- Database List -->
+                                    <div class="space-y-3">
+                                        <h2 class="text-xs font-bold text-slate-700">Available Databases (4)</h2>
+                                        <div class="border border-slate-200 rounded-xl overflow-hidden divide-y divide-slate-100 bg-white shadow-sm">
+                                            <div class="p-3 flex justify-between items-center hover:bg-slate-50 transition-colors">
+                                                <div class="flex items-center gap-4">
+                                                    <div class="w-4 h-4 border-2 border-cyan-500 rounded bg-cyan-500 flex items-center justify-center">
+                                                        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                                    </div>
+                                                    <div class="flex items-center gap-2">
+                                                        <svg class="w-3.5 h-3.5 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 1.105 1.79 2 4 2s4-.895 4-2V7M4 7c0 1.105 1.79 2 4 2s4-.895 4-2M4 7c0-1.105 1.79-2 4-2s4 .895 4 2m0 5c0 1.105-1.79 2-4 2s-4-.895-4-2"/></svg>
+                                                        <span class="text-[11px] font-bold text-slate-800">production_main</span>
+                                                    </div>
+                                                </div>
+                                                <button class="px-2 py-1 border border-slate-200 rounded text-[9px] font-bold text-slate-600 hover:bg-slate-50 transition-colors flex items-center gap-1">Select <svg class="w-2 h-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></button>
+                                            </div>
+                                            <div class="p-3 flex justify-between items-center hover:bg-slate-50 transition-colors">
+                                                <div class="flex items-center gap-4">
+                                                    <div class="w-4 h-4 border-2 border-slate-200 rounded bg-white"></div>
+                                                    <div class="flex items-center gap-2">
+                                                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 1.105 1.79 2 4 2s4-.895 4-2V7M4 7c0 1.105 1.79 2 4 2s4-.895 4-2M4 7c0-1.105 1.79-2 4-2s4 .895 4 2m0 5c0 1.105-1.79 2-4 2s-4-.895-4-2"/></svg>
+                                                        <span class="text-[11px] font-medium text-slate-600">e_commerce_store</span>
+                                                    </div>
+                                                </div>
+                                                <button class="px-2 py-1 border border-slate-200 rounded text-[9px] font-bold text-slate-600 hover:bg-slate-50 transition-colors flex items-center gap-1">Select <svg class="w-2 h-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="h-64 bg-white rounded-xl border border-slate-200 shadow-sm"></div>
-                            </div>
+                            </template>
+
+                            <!-- Backups Page -->
+                            <template x-if="activePage === 'backups'">
+                                <div class="space-y-6">
+                                    <div class="flex justify-between items-center">
+                                        <h1 class="text-xl font-bold text-slate-900 tracking-tight">Backup History</h1>
+                                        <button class="px-3 py-1.5 border border-slate-200 rounded-md text-[10px] font-semibold hover:bg-slate-50 transition-colors">Refresh</button>
+                                    </div>
+
+                                    <div class="border border-slate-200 rounded-lg shadow-sm overflow-hidden bg-white">
+                                        <table class="w-full text-left text-[10px]">
+                                            <thead class="bg-slate-50 border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider">
+                                                <tr>
+                                                    <th class="w-8 p-3"></th>
+                                                    <th class="p-3">Database</th>
+                                                    <th class="p-3">Source</th>
+                                                    <th class="p-3">Timestamp</th>
+                                                    <th class="p-3 text-right">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-slate-100">
+                                                <tr class="hover:bg-slate-50/50 transition-colors cursor-pointer">
+                                                    <td class="p-3 text-slate-400">
+                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                                    </td>
+                                                    <td class="p-3 font-bold text-slate-800">production_main</td>
+                                                    <td class="p-3">
+                                                        <span class="px-2 py-0.5 rounded-full border border-blue-100 bg-blue-50 text-blue-700 font-bold text-[8px]">SCHEDULED</span>
+                                                    </td>
+                                                    <td class="p-3 text-slate-500">22/03/2026</td>
+                                                    <td class="p-3 text-right">
+                                                        <div class="flex justify-end gap-2">
+                                                            <button class="p-1 hover:bg-slate-100 rounded transition-colors">
+                                                                <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                                                            </button>
+                                                            <button class="p-1 hover:bg-slate-100 rounded transition-colors">
+                                                                <svg class="w-3.5 h-3.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <tr class="hover:bg-slate-50/50 transition-colors cursor-pointer">
+                                                    <td class="p-3 text-slate-400">
+                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                                    </td>
+                                                    <td class="p-3 font-bold text-slate-800">e_commerce_store</td>
+                                                    <td class="p-3">
+                                                        <span class="px-2 py-0.5 rounded-full border border-slate-200 bg-slate-50 text-slate-600 font-bold text-[8px]">MANUAL</span>
+                                                    </td>
+                                                    <td class="p-3 text-slate-500">21/03/2026</td>
+                                                    <td class="p-3 text-right">
+                                                        <div class="flex justify-end gap-2">
+                                                            <button class="p-1 hover:bg-slate-100 rounded transition-colors">
+                                                                <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                                                            </button>
+                                                            <button class="p-1 hover:bg-slate-100 rounded transition-colors">
+                                                                <svg class="w-3.5 h-3.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <!-- Diagnostics Page -->
+                            <template x-if="activePage === 'diagnostics'">
+                                <div class="space-y-6">
+                                    <div class="flex justify-between items-center">
+                                        <h1 class="text-xl font-bold text-slate-900 tracking-tight">System Diagnostics</h1>
+                                        <button class="px-3 py-1.5 border border-slate-200 rounded-md text-[10px] font-semibold hover:bg-slate-50 transition-colors">Refresh Status</button>
+                                    </div>
+
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <!-- Apache Card -->
+                                        <div class="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
+                                            <div class="p-4 bg-slate-50/50 border-b border-slate-100 flex justify-between items-center">
+                                                <h3 class="text-[11px] font-bold text-slate-700 flex items-center gap-2">
+                                                    <svg class="w-3 h-3 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                                    Web Server
+                                                </h3>
+                                                <span class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[8px] font-bold">Port 80</span>
+                                            </div>
+                                            <div class="p-4 space-y-4">
+                                                <div class="flex justify-between items-center text-[10px]">
+                                                    <span class="text-slate-500">Status:</span>
+                                                    <span class="flex items-center gap-1.5 text-slate-400 font-bold uppercase"><div class="w-1.5 h-1.5 rounded-full bg-slate-300"></div> Inactive</span>
+                                                </div>
+                                                <div class="p-3 bg-amber-50 border border-amber-100 rounded text-[9px] text-amber-700 italic">
+                                                    Port 80 is not in use. Check your service manager.
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- MySQL Card -->
+                                        <div class="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
+                                            <div class="p-4 bg-slate-50/50 border-b border-slate-100 flex justify-between items-center">
+                                                <h3 class="text-[11px] font-bold text-slate-700 flex items-center gap-2">
+                                                    <svg class="w-3 h-3 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                                    MySQL / MariaDB
+                                                </h3>
+                                                <span class="px-2 py-0.5 bg-slate-900 text-white rounded text-[8px] font-bold">Port 3306</span>
+                                            </div>
+                                            <div class="p-4 space-y-4">
+                                                <div class="flex justify-between items-center text-[10px]">
+                                                    <span class="text-slate-500">Status:</span>
+                                                    <span class="flex items-center gap-1.5 text-green-600 font-bold uppercase"><div class="w-1.5 h-1.5 rounded-full bg-green-500"></div> Active / In Use</span>
+                                                </div>
+                                                <div class="p-2 bg-slate-50 border border-slate-100 rounded space-y-1.5">
+                                                    <div class="flex justify-between text-[9px]">
+                                                        <span class="text-slate-400">Process:</span>
+                                                        <span class="font-bold text-slate-700">mysqld.exe</span>
+                                                    </div>
+                                                    <div class="flex justify-between text-[9px]">
+                                                        <span class="text-slate-400">PID:</span>
+                                                        <span class="text-slate-700">4520</span>
+                                                    </div>
+                                                </div>
+                                                <div class="grid grid-cols-2 gap-2">
+                                                    <button class="py-1.5 bg-red-50 text-red-600 border border-red-100 rounded text-[9px] font-bold hover:bg-red-100 transition-colors">Kill Process</button>
+                                                    <button class="py-1.5 border border-slate-200 rounded text-[9px] font-bold text-slate-600 hover:bg-slate-50 transition-colors">Change Port</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <!-- Dashboard Page -->
+                            <template x-if="activePage === 'dashboard'">
+                                <div class="space-y-6">
+                                    <div class="space-y-1">
+                                        <h1 class="text-xl font-bold text-slate-900 tracking-tight">Dashboard</h1>
+                                        <p class="text-[10px] text-slate-500">Overview of your local database backup system.</p>
+                                    </div>
+                                    <div class="grid grid-cols-3 gap-4">
+                                        <div class="p-4 border border-slate-100 rounded-xl bg-white shadow-sm space-y-2">
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Total Backups</span>
+                                                <svg class="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                            </div>
+                                            <div class="text-2xl font-black text-slate-900 text-start">42</div>
+                                        </div>
+                                        <div class="p-4 border border-slate-100 rounded-xl bg-white shadow-sm space-y-2">
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Successful</span>
+                                                <svg class="w-3.5 h-3.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                            </div>
+                                            <div class="text-2xl font-black text-green-600 text-start">41</div>
+                                        </div>
+                                        <div class="p-4 border border-slate-100 rounded-xl bg-white shadow-sm space-y-2">
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Failed</span>
+                                                <svg class="w-3.5 h-3.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                            </div>
+                                            <div class="text-2xl font-black text-red-500 text-start">1</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="space-y-3">
+                                        <h3 class="text-xs font-bold text-slate-700">Recent Activity</h3>
+                                        <div class="space-y-2">
+                                            <div class="flex items-center justify-between p-3 border border-slate-100 rounded-lg bg-white shadow-sm">
+                                                <div class="flex items-center gap-3">
+                                                    <div class="w-8 h-8 rounded bg-slate-50 flex items-center justify-center">
+                                                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 1.105 1.79 2 4 2s4-.895 4-2V7M4 7c0 1.105 1.79 2 4 2s4-.895 4-2M4 7c0-1.105 1.79-2 4-2s4 .895 4 2m0 5c0 1.105-1.79 2-4 2s-4-.895-4-2"/></svg>
+                                                    </div>
+                                                    <div>
+                                                        <p class="text-[10px] font-bold text-slate-800">production_main</p>
+                                                        <p class="text-[8px] text-slate-400">22/03/2026, 02:00:00</p>
+                                                    </div>
+                                                </div>
+                                                <span class="text-[9px] font-bold text-green-600 uppercase">Success</span>
+                                            </div>
+                                            <div class="flex items-center justify-between p-3 border border-slate-100 rounded-lg bg-white shadow-sm">
+                                                <div class="flex items-center gap-3">
+                                                    <div class="w-8 h-8 rounded bg-slate-50 flex items-center justify-center">
+                                                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 1.105 1.79 2 4 2s4-.895 4-2V7M4 7c0 1.105 1.79 2 4 2s4-.895 4-2M4 7c0-1.105 1.79-2 4-2s4 .895 4 2m0 5c0 1.105-1.79 2-4 2s-4-.895-4-2"/></svg>
+                                                    </div>
+                                                    <div>
+                                                        <p class="text-[10px] font-bold text-slate-800">e_commerce_store</p>
+                                                        <p class="text-[8px] text-slate-400">21/03/2026, 14:30:00</p>
+                                                    </div>
+                                                </div>
+                                                <span class="text-[9px] font-bold text-green-600 uppercase">Success</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+
                         </div>
                     </div>
                 </div>
@@ -86,7 +358,7 @@
         </div>
     </section>
 
-    <!-- Dashboard Section -->
+    <!-- Content Sections -->
     <section id="dashboard" class="py-24 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid lg:grid-cols-2 gap-16 items-center">
@@ -94,35 +366,34 @@
                     <div class="w-12 h-12 bg-cyan-100 text-cyan-600 rounded-2xl flex items-center justify-center mb-6">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                     </div>
-                    <h2 class="text-3xl lg:text-4xl font-extrabold text-slate-900 mb-6">Intuitive Real-Time Dashboard</h2>
+                    <h2 class="text-3xl lg:text-4xl font-extrabold text-slate-900 mb-6 tracking-tight">Real-Time Environment Tracking</h2>
                     <p class="text-lg text-slate-600 mb-8 leading-relaxed">
-                        Get a birds-eye view of your entire database environment. Monitor recent backup performance, track storage usage, and identify scheduled tasks at a glance.
+                        Get instant visual feedback on your database health. Our dashboard tracks storage metrics, success rates, and service uptime with zero configuration.
                     </p>
                     <ul class="space-y-4">
                         <li class="flex items-start gap-3">
                             <div class="mt-1 w-5 h-5 bg-cyan-500 rounded-full flex items-center justify-center flex-shrink-0"><svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></div>
-                            <span class="text-slate-700 font-medium">Quick Statistics for successful vs. failed backups.</span>
+                            <span class="text-slate-700 font-semibold tracking-tight">Interactive charts for backup performance.</span>
                         </li>
                         <li class="flex items-start gap-3">
                             <div class="mt-1 w-5 h-5 bg-cyan-500 rounded-full flex items-center justify-center flex-shrink-0"><svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></div>
-                            <span class="text-slate-700 font-medium">Visual indicators for service health (MySQL/MariaDB).</span>
+                            <span class="text-slate-700 font-semibold tracking-tight">Automatic detection of MySQL & MariaDB services.</span>
                         </li>
                     </ul>
                 </div>
-                <div class="bg-slate-100 rounded-3xl p-8 lg:p-12 aspect-square flex items-center justify-center relative overflow-hidden group">
-                    <div class="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-transparent"></div>
-                    <div class="relative w-full h-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden transform group-hover:scale-[1.02] transition-transform duration-500">
-                         <!-- Simplified UI -->
+                <div class="bg-slate-50 border border-slate-100 rounded-3xl p-8 lg:p-12 aspect-square flex items-center justify-center relative overflow-hidden group shadow-2xl shadow-slate-200">
+                    <div class="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent"></div>
+                    <div class="relative w-full h-full bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden transform group-hover:scale-[1.03] transition-transform duration-700">
                          <div class="p-6 space-y-4">
                             <div class="flex justify-between items-center">
-                                <div class="h-4 bg-slate-100 rounded w-1/3"></div>
-                                <div class="w-8 h-8 rounded-full bg-slate-50"></div>
+                                <div class="h-4 bg-slate-100 rounded-full w-1/3"></div>
+                                <div class="w-8 h-8 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-cyan-500 font-bold">D</div>
                             </div>
                             <div class="grid grid-cols-2 gap-4">
-                                <div class="h-20 rounded-xl bg-cyan-50 border border-cyan-100"></div>
-                                <div class="h-20 rounded-xl bg-slate-50 border border-slate-100"></div>
+                                <div class="h-24 rounded-2xl bg-cyan-50 border border-cyan-100 shadow-sm"></div>
+                                <div class="h-24 rounded-2xl bg-slate-50 border border-slate-100"></div>
                             </div>
-                            <div class="h-48 rounded-xl bg-slate-50 border border-slate-100"></div>
+                            <div class="h-56 rounded-2xl bg-slate-50 border border-slate-100"></div>
                          </div>
                     </div>
                 </div>
@@ -130,85 +401,82 @@
         </div>
     </section>
 
-    <!-- Database Backup Section -->
+    <!-- Backup Section -->
     <section id="backups" class="py-24 bg-slate-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center mb-20">
-            <h2 class="text-3xl lg:text-4xl font-extrabold text-slate-900 mb-6">Database Precision & Control</h2>
+            <h2 class="text-3xl lg:text-4xl font-extrabold text-slate-900 mb-6 tracking-tight">Precision Snapshots</h2>
             <p class="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
-                Whether you need a full SQL dump or a lightning-fast raw physical copy, DB Guard gives you the tools to manage backups exactly how you want.
+                DB Guard offers multiple backup strategies to fit your workflow, from standard SQL dumps to high-speed raw directory copies.
             </p>
         </div>
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <!-- Manual Backups -->
-            <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300">
-                <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-6">
+            <div class="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500">
+                <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-6 shadow-sm shadow-blue-200">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path></svg>
                 </div>
                 <h3 class="text-xl font-bold text-slate-900 mb-4">Manual Snapshots</h3>
-                <p class="text-slate-600 leading-relaxed mb-6">Trigger instant backups for single or multiple databases. Choose between SQL and RAW modes depending on your needs.</p>
-                <span class="text-sm font-bold text-blue-600 group cursor-pointer flex items-center gap-2">Explore Manual Mode <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg></span>
+                <p class="text-slate-600 leading-relaxed mb-6 font-medium text-[15px]">Create instant backups for any database with one click. Ideal for pre-deployment safety nets.</p>
+                <div class="text-sm font-bold text-blue-600 flex items-center gap-2 group cursor-pointer">Explore Feature <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg></div>
             </div>
-            <!-- Backup History -->
-            <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300">
-                <div class="w-12 h-12 bg-cyan-100 text-cyan-600 rounded-2xl flex items-center justify-center mb-6">
+            <div class="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500">
+                <div class="w-12 h-12 bg-cyan-100 text-cyan-600 rounded-2xl flex items-center justify-center mb-6 shadow-sm shadow-cyan-200">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </div>
-                <h3 class="text-xl font-bold text-slate-900 mb-4">Historical Tracking</h3>
-                <p class="text-slate-600 leading-relaxed mb-6">Every backup is logged with source indicators (Manual/Scheduled). One-click restore makes recovery effortless.</p>
-                <span class="text-sm font-bold text-cyan-600 group cursor-pointer flex items-center gap-2">View History Page <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg></span>
+                <h3 class="text-xl font-bold text-slate-900 mb-4">Smart History</h3>
+                <p class="text-slate-600 leading-relaxed mb-6 font-medium text-[15px]">Detailed logs track source, size, and status. One-click restore brings your data back in seconds.</p>
+                <div class="text-sm font-bold text-cyan-600 flex items-center gap-2 group cursor-pointer">Review History <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg></div>
             </div>
-            <!-- Raw Mode -->
-            <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300">
-                <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center mb-6">
+            <div class="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500">
+                <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center mb-6 shadow-sm shadow-amber-200">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                 </div>
-                <h3 class="text-xl font-bold text-slate-900 mb-4">Fast Raw Copy</h3>
-                <p class="text-slate-600 leading-relaxed mb-6">Perform high-speed physical directory copies for massive databases, ensuring minimal downtime during backup cycles.</p>
-                <span class="text-sm font-bold text-amber-600 group cursor-pointer flex items-center gap-2">How Raw Mode Works <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg></span>
+                <h3 class="text-xl font-bold text-slate-900 mb-4">Raw Copy Tech</h3>
+                <p class="text-slate-600 leading-relaxed mb-6 font-medium text-[15px]">High-speed physical transfers for massive data volumes. No SQL processing overhead, just pure speed.</p>
+                <div class="text-sm font-bold text-amber-600 flex items-center gap-2 group cursor-pointer">Compare Modes <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg></div>
             </div>
         </div>
     </section>
 
-    <!-- Smart Scheduling Section -->
+    <!-- Schedules Section -->
     <section id="schedules" class="py-24 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid lg:grid-cols-2 gap-16 items-center">
-                <div class="order-2 lg:order-1 bg-slate-900 rounded-3xl p-8 lg:p-12 relative overflow-hidden group">
-                    <div class="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-transparent"></div>
+                <div class="order-2 lg:order-1 bg-slate-900 rounded-3xl p-8 lg:p-12 relative overflow-hidden group shadow-2xl">
+                    <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent"></div>
                     <div class="relative space-y-4">
-                        <div class="flex items-center gap-4 bg-slate-800/50 p-4 rounded-xl border border-slate-700">
-                            <div class="w-10 h-10 rounded-lg bg-green-500/20 text-green-500 flex items-center justify-center"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg></div>
+                        <div class="flex items-center gap-4 bg-slate-800/40 p-4 rounded-2xl border border-slate-800 transform group-hover:-translate-x-2 transition-transform">
+                            <div class="w-10 h-10 rounded-xl bg-green-500/10 text-green-500 flex items-center justify-center border border-green-500/20"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg></div>
                             <div>
-                                <div class="text-white font-bold text-sm">Nightly Production Sync</div>
-                                <div class="text-slate-400 text-xs">Daily at 02:00 AM</div>
+                                <div class="text-white font-bold text-sm tracking-tight">Main Production Sync</div>
+                                <div class="text-slate-400 text-xs">Daily at 02:00 AM • Active</div>
                             </div>
                         </div>
-                        <div class="flex items-center gap-4 bg-slate-800/50 p-4 rounded-xl border border-slate-700">
-                            <div class="w-10 h-10 rounded-lg bg-blue-500/20 text-blue-500 flex items-center justify-center"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg></div>
+                        <div class="flex items-center gap-4 bg-slate-800/40 p-4 rounded-2xl border border-slate-800 transform group-hover:translate-x-2 transition-transform">
+                            <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center border border-blue-500/20"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg></div>
                             <div>
-                                <div class="text-white font-bold text-sm">Weekly Archive</div>
-                                <div class="text-slate-400 text-xs">Every Sunday at 11:00 PM</div>
+                                <div class="text-white font-bold text-sm tracking-tight">Weekly Offline Archive</div>
+                                <div class="text-slate-400 text-xs">Every Sunday • Active</div>
                             </div>
                         </div>
-                        <div class="h-32"></div>
+                        <div class="h-40"></div>
                     </div>
                 </div>
                 <div class="order-1 lg:order-2">
-                    <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-6">
+                    <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-6 shadow-sm shadow-blue-200">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     </div>
-                    <h2 class="text-3xl lg:text-4xl font-extrabold text-slate-900 mb-6">Set It and Forget It</h2>
-                    <p class="text-lg text-slate-600 mb-8 leading-relaxed">
-                        Automate your backup workflows with granular control. Define daily, weekly, or monthly schedules and let the app handle the rest in the background.
+                    <h2 class="text-3xl lg:text-4xl font-extrabold text-slate-900 mb-6 tracking-tight">Automated Peace of Mind</h2>
+                    <p class="text-lg text-slate-600 mb-8 leading-relaxed font-medium">
+                        Configure complex backup rotations in seconds. Our smart scheduler runs as a persistent service, ensuring your data is protected even when the app is closed.
                     </p>
-                    <div class="grid grid-cols-2 gap-6">
+                    <div class="grid grid-cols-2 gap-8">
                         <div>
-                            <div class="text-2xl font-bold text-slate-900 mb-1">Background</div>
-                            <p class="text-slate-500 text-sm">Runs as a silent service with zero impact.</p>
+                            <div class="text-2xl font-black text-slate-900 mb-1 tracking-tighter">Silent</div>
+                            <p class="text-slate-500 text-sm font-medium">Background execution with zero interruption.</p>
                         </div>
                         <div>
-                            <div class="text-2xl font-bold text-slate-900 mb-1">Notifications</div>
-                            <p class="text-slate-500 text-sm">Get notified the moment a backup finishes.</p>
+                            <div class="text-2xl font-black text-slate-900 mb-1 tracking-tighter">Smart</div>
+                            <p class="text-slate-500 text-sm font-medium">Granular control over frequency and timing.</p>
                         </div>
                     </div>
                 </div>
@@ -217,37 +485,41 @@
     </section>
 
     <!-- Diagnostics Section -->
-    <section id="diagnostics" class="py-24 bg-slate-900 text-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="diagnostics" class="py-24 bg-slate-900 text-white relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-1/3 h-full bg-cyan-600/10 blur-[100px] rounded-full translate-x-1/2"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div class="grid lg:grid-cols-2 gap-16 items-center">
                 <div>
-                    <h2 class="text-3xl lg:text-4xl font-extrabold mb-6">Powerful System Diagnostics</h2>
-                    <p class="text-lg text-slate-400 mb-8 leading-relaxed">
-                        Troubleshoot database issues instantly. Our diagnostic suite identifies port conflicts (like the common 3306 error) and offers one-click fixes.
+                    <h2 class="text-3xl lg:text-4xl font-extrabold mb-6 tracking-tight">Elite System Recovery</h2>
+                    <p class="text-lg text-slate-400 mb-8 leading-relaxed font-medium">
+                        Stop struggling with obscure MySQL errors. DB Guard's diagnostic engine identifies port conflicts instantly and offers automated fixes to get your environment back online.
                     </p>
                     <div class="space-y-6">
                         <div class="flex gap-4">
-                            <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-red-500/20 text-red-500 flex items-center justify-center font-bold">!</div>
+                            <div class="flex-shrink-0 w-10 h-10 rounded-2xl bg-red-500/20 text-red-500 flex items-center justify-center font-black text-xl border border-red-500/20">!</div>
                             <div>
-                                <h4 class="font-bold text-slate-100">Conflict Detection</h4>
-                                <p class="text-slate-400 text-sm">Detect which process is blocking your MySQL port.</p>
+                                <h4 class="font-bold text-slate-100 tracking-tight">Conflict Shield</h4>
+                                <p class="text-slate-400 text-sm font-medium">Detect processes blocking port 3306 with precision.</p>
                             </div>
                         </div>
                         <div class="flex gap-4">
-                            <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-green-500/20 text-green-500 flex items-center justify-center font-bold">✓</div>
+                            <div class="flex-shrink-0 w-10 h-10 rounded-2xl bg-green-500/20 text-green-500 flex items-center justify-center font-black text-xl border border-green-500/20">✓</div>
                             <div>
-                                <h4 class="font-bold text-slate-100">One-Click Kill</h4>
-                                <p class="text-slate-400 text-sm">Instantly free up ports without opening a terminal.</p>
+                                <h4 class="font-bold text-slate-100 tracking-tight">Auto-Resolver</h4>
+                                <p class="text-slate-400 text-sm font-medium">Resolve environment issues with a single click—no shell required.</p>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="bg-slate-800 rounded-3xl p-4 lg:p-8 border border-slate-700 shadow-2xl">
-                    <div class="bg-slate-900 rounded-xl overflow-hidden font-mono text-xs lg:text-sm p-6 space-y-2">
-                        <div class="text-slate-500">// Running diagnostics...</div>
-                        <div class="text-slate-300">Checking port 3306... <span class="text-red-400">FAILED</span></div>
-                        <div class="text-slate-300">Process found: mysqld.exe (PID: 4520)</div>
-                        <div class="text-cyan-400 cursor-pointer hover:underline">> Fix conflict now?</div>
+                <div class="bg-black/40 rounded-3xl p-6 lg:p-10 border border-white/10 shadow-2xl backdrop-blur-sm">
+                    <div class="bg-slate-950 rounded-xl overflow-hidden font-mono text-xs lg:text-sm p-6 space-y-3 shadow-inner border border-white/5">
+                        <div class="text-slate-500 italic">// Starting diagnostics scan...</div>
+                        <div class="flex justify-between border-b border-white/5 pb-2">
+                            <span class="text-slate-300 tracking-tight">Port 3306 Check:</span>
+                            <span class="text-red-400 font-black">CRITICAL CONFLICT</span>
+                        </div>
+                        <div class="text-slate-400 pt-2 tracking-tight">Process detected: <span class="text-white font-bold">mysqld.exe</span> (PID: 4520)</div>
+                        <div class="mt-4 px-4 py-2 bg-white/5 border border-cyan-500/30 rounded-lg text-cyan-400 cursor-pointer hover:bg-cyan-500 hover:text-white transition-all text-center font-bold uppercase tracking-widest text-[10px]">Execute One-Click Fix</div>
                     </div>
                 </div>
             </div>
@@ -258,13 +530,13 @@
     <section class="py-24 bg-cyan-600 relative overflow-hidden">
         <div class="absolute inset-0 bg-gradient-to-t from-cyan-700 to-transparent opacity-50"></div>
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-            <h2 class="text-4xl lg:text-5xl font-extrabold text-white mb-8 tracking-tight">Ready to Secure Your Data?</h2>
-            <p class="text-xl text-cyan-100 max-w-2xl mx-auto mb-12">
-                Join thousands of developers and DBAs who trust DB Guard for their local and production MySQL backups.
+            <h2 class="text-4xl lg:text-5xl font-extrabold text-white mb-8 tracking-tight">Start Safeguarding Your Data Today.</h2>
+            <p class="text-xl text-cyan-100 max-w-2xl mx-auto mb-12 font-medium">
+                The most intuitive desktop MySQL backup solution. Lightweight, powerful, and built for the modern developer.
             </p>
             <div class="flex flex-col sm:flex-row items-center justify-center gap-6">
-                <a href="#" class="w-full sm:w-auto bg-white text-cyan-700 px-10 py-4 rounded-2xl text-xl font-bold hover:bg-slate-900 hover:text-white transition-all shadow-2xl">Start Free Download</a>
-                <p class="text-cyan-200 font-medium">Compatible with Windows 10, 11+</p>
+                <a href="#" class="w-full sm:w-auto bg-white text-cyan-700 px-12 py-5 rounded-2xl text-xl font-extrabold hover:bg-slate-900 hover:text-white transition-all shadow-2xl shadow-cyan-900/40">Download for Windows</a>
+                <p class="text-cyan-200 font-bold uppercase tracking-widest text-xs">v2.0.0 Stable Build</p>
             </div>
         </div>
     </section>
@@ -278,7 +550,7 @@
                 </div>
                 <span class="text-lg font-bold tracking-tight text-slate-900">DB<span class="text-cyan-600">Guard</span></span>
             </div>
-            <p class="text-slate-500 text-sm font-medium">© 2026 DB Guard App. All rights reserved.</p>
+            <p class="text-slate-500 text-sm font-bold uppercase tracking-widest">© 2026 DB Guard App • Secure & Reliable</p>
         </div>
     </footer>
 
