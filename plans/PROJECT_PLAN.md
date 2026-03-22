@@ -64,6 +64,6 @@ This document outlines the detailed milestones and tasks for the development of 
 
 ## Milestone 10: Polishing & Distribution
 - [x] Add dark/light mode support.
-- [ ] Conduct final UI/UX audit using shadcn/ui components.
-- [ ] Configure `tauri.conf.json` for production (icons, bundle identifiers).
-- [ ] Build and test the installer for the target OS (Windows).
+- [x] Conduct final UI/UX audit using shadcn/ui components.
+- [x] Configure `tauri.conf.json` for production (icons, bundle identifiers).
+- [x] Build and test the installer for the target OS (Windows).

@@ -20,6 +20,7 @@ import {
   Database as DbIcon,
   Zap,
   FileCode,
+  Archive,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -230,15 +231,18 @@ const Backups = () => {
                         onClick={(e) => e.stopPropagation()}
                       >
                         <div className="flex justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            title="Restore"
-                            onClick={() => setRecordToRestore(backup)}
-                            disabled={backup.status !== "Success"}
-                          >
-                            <RotateCcw className="h-4 w-4 text-blue-500" />
-                          </Button>
+                          {!backup.file_path.toLowerCase().endsWith(".gz") && 
+                           !backup.file_path.toLowerCase().endsWith(".zip") && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              title="Restore"
+                              onClick={() => setRecordToRestore(backup)}
+                              disabled={backup.status !== "Success"}
+                            >
+                              <RotateCcw className="h-4 w-4 text-blue-500" />
+                            </Button>
+                          )}
                           <Button
                             variant="ghost"
                             size="icon"
@@ -273,22 +277,31 @@ const Backups = () => {
                               </div>
                             </div>
                             
-                            <div className="space-y-2">
-                              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                Backup Type:
-                              </h4>
-                              <div className="flex items-center gap-2">
-                                <Badge variant="outline" className="capitalize bg-background">
-                                  {backup.backup_type === "raw" ? (
-                                    <span className="flex items-center gap-1.5 text-amber-600">
-                                      <Zap className="h-3 w-3" /> Raw Copy (Physical)
-                                    </span>
-                                  ) : (
-                                    <span className="flex items-center gap-1.5 text-blue-600">
-                                      <FileCode className="h-3 w-3" /> SQL Dump
-                                    </span>
+                            <div className="space-y-4">
+                              <div className="space-y-2">
+                                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                  Backup Type:
+                                </h4>
+                                <div className="flex items-center gap-2">
+                                  <Badge variant="outline" className="capitalize bg-background">
+                                    {backup.backup_type === "raw" ? (
+                                      <span className="flex items-center gap-1.5 text-amber-600">
+                                        <Zap className="h-3 w-3" /> Raw Copy (Physical)
+                                      </span>
+                                    ) : (
+                                      <span className="flex items-center gap-1.5 text-blue-600">
+                                        <FileCode className="h-3 w-3" /> SQL Dump
+                                      </span>
+                                    )}
+                                  </Badge>
+
+                                  {(backup.file_path.toLowerCase().endsWith(".gz") || 
+                                    backup.file_path.toLowerCase().endsWith(".zip")) && (
+                                    <Badge variant="secondary" className="bg-amber-100 text-amber-700 border-amber-200">
+                                      <Archive className="h-3 w-3 mr-1" /> Compressed
+                                    </Badge>
                                   )}
-                                </Badge>
+                                </div>
                               </div>
                             </div>
                           </div>
