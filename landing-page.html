@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DB Guard | Ultimate MySQL Backup Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); }
+        .hero-gradient { background: radial-gradient(circle at 50% 50%, #e0f2fe 0%, #ffffff 100%); }
+    </style>
+</head>
+<body class="bg-white text-slate-900 overflow-x-hidden">
+
+    <!-- Navbar -->
+    <nav class="fixed w-full z-50 glass border-b border-slate-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-cyan-600 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="螺旋 D4 7v10c0 1.105 1.79 2 4 2s4-.895 4-2V7M4 7c0 1.105 1.79 2 4 2s4-.895 4-2M4 7c0-1.105 1.79-2 4-2s4 .895 4 2m0 5c0 1.105-1.79 2-4 2s-4-.895-4-2"></path></svg>
+                    </div>
+                    <span class="text-xl font-extrabold tracking-tight text-slate-900">DB<span class="text-cyan-600">Guard</span></span>
+                </div>
+                <div class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600 uppercase tracking-wider">
+                    <a href="#dashboard" class="hover:text-cyan-600 transition-colors">Dashboard</a>
+                    <a href="#backups" class="hover:text-cyan-600 transition-colors">Backups</a>
+                    <a href="#schedules" class="hover:text-cyan-600 transition-colors">Schedules</a>
+                    <a href="#diagnostics" class="hover:text-cyan-600 transition-colors">Diagnostics</a>
+                </div>
+                <a href="#" class="bg-slate-900 text-white px-5 py-2.5 rounded-full text-sm font-bold hover:bg-cyan-600 transition-all shadow-lg shadow-cyan-900/10">Download Now</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 hero-gradient overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+            <span class="inline-block py-1 px-4 rounded-full bg-cyan-50 text-cyan-700 text-xs font-bold uppercase tracking-widest mb-6 border border-cyan-100">Version 2.0 Now Available</span>
+            <h1 class="text-5xl lg:text-7xl font-extrabold text-slate-900 tracking-tight mb-8">
+                Your MySQL Backups,<br/><span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-blue-600">On Autopilot.</span>
+            </h1>
+            <p class="text-lg lg:text-xl text-slate-600 max-w-2xl mx-auto mb-10 leading-relaxed">
+                A robust desktop application designed to secure your databases with manual snapshots, smart scheduling, and instant system diagnostics.
+            </p>
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="#" class="w-full sm:w-auto flex items-center justify-center gap-3 bg-slate-900 text-white px-8 py-4 rounded-2xl text-lg font-bold hover:bg-cyan-600 transition-all shadow-2xl shadow-cyan-900/20 group">
+                    <svg class="w-6 h-6 group-hover:animate-bounce" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                    Download for Windows
+                </a>
+                <a href="#dashboard" class="w-full sm:w-auto px-8 py-4 rounded-2xl text-lg font-bold text-slate-600 hover:bg-white transition-all border border-transparent hover:border-slate-200">Learn More</a>
+            </div>
+
+            <!-- Mockup Placeholder -->
+            <div class="mt-20 relative max-w-5xl mx-auto">
+                <div class="absolute inset-0 bg-cyan-500/20 blur-3xl rounded-full scale-75"></div>
+                <div class="relative bg-slate-900 rounded-2xl shadow-2xl border border-slate-800 p-2 lg:p-4 overflow-hidden">
+                    <div class="bg-slate-800 h-6 w-full rounded-t-lg mb-2 flex items-center gap-1.5 px-3">
+                        <div class="w-2.5 h-2.5 rounded-full bg-red-500"></div>
+                        <div class="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
+                        <div class="w-2.5 h-2.5 rounded-full bg-green-500"></div>
+                    </div>
+                    <div class="bg-white rounded-lg aspect-video flex items-center justify-center overflow-hidden">
+                        <!-- Simulated UI -->
+                        <div class="w-full h-full flex bg-slate-50">
+                            <div class="w-48 border-r border-slate-200 p-4 space-y-4 hidden lg:block">
+                                <div class="h-4 bg-slate-200 rounded-full w-3/4"></div>
+                                <div class="h-4 bg-slate-100 rounded-full w-full"></div>
+                                <div class="h-4 bg-slate-100 rounded-full w-5/6"></div>
+                                <div class="h-4 bg-cyan-100 rounded-full w-full"></div>
+                            </div>
+                            <div class="flex-1 p-8 space-y-6">
+                                <div class="grid grid-cols-3 gap-4">
+                                    <div class="h-24 bg-white rounded-xl border border-slate-200 shadow-sm"></div>
+                                    <div class="h-24 bg-white rounded-xl border border-slate-200 shadow-sm"></div>
+                                    <div class="h-24 bg-white rounded-xl border border-slate-200 shadow-sm"></div>
+                                </div>
+                                <div class="h-64 bg-white rounded-xl border border-slate-200 shadow-sm"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dashboard Section -->
+    <section id="dashboard" class="py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <div>
+                    <div class="w-12 h-12 bg-cyan-100 text-cyan-600 rounded-2xl flex items-center justify-center mb-6">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    </div>
+                    <h2 class="text-3xl lg:text-4xl font-extrabold text-slate-900 mb-6">Intuitive Real-Time Dashboard</h2>
+                    <p class="text-lg text-slate-600 mb-8 leading-relaxed">
+                        Get a birds-eye view of your entire database environment. Monitor recent backup performance, track storage usage, and identify scheduled tasks at a glance.
+                    </p>
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-3">
+                            <div class="mt-1 w-5 h-5 bg-cyan-500 rounded-full flex items-center justify-center flex-shrink-0"><svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></div>
+                            <span class="text-slate-700 font-medium">Quick Statistics for successful vs. failed backups.</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <div class="mt-1 w-5 h-5 bg-cyan-500 rounded-full flex items-center justify-center flex-shrink-0"><svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></div>
+                            <span class="text-slate-700 font-medium">Visual indicators for service health (MySQL/MariaDB).</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="bg-slate-100 rounded-3xl p-8 lg:p-12 aspect-square flex items-center justify-center relative overflow-hidden group">
+                    <div class="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-transparent"></div>
+                    <div class="relative w-full h-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden transform group-hover:scale-[1.02] transition-transform duration-500">
+                         <!-- Simplified UI -->
+                         <div class="p-6 space-y-4">
+                            <div class="flex justify-between items-center">
+                                <div class="h-4 bg-slate-100 rounded w-1/3"></div>
+                                <div class="w-8 h-8 rounded-full bg-slate-50"></div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="h-20 rounded-xl bg-cyan-50 border border-cyan-100"></div>
+                                <div class="h-20 rounded-xl bg-slate-50 border border-slate-100"></div>
+                            </div>
+                            <div class="h-48 rounded-xl bg-slate-50 border border-slate-100"></div>
+                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Database Backup Section -->
+    <section id="backups" class="py-24 bg-slate-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center mb-20">
+            <h2 class="text-3xl lg:text-4xl font-extrabold text-slate-900 mb-6">Database Precision & Control</h2>
+            <p class="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
+                Whether you need a full SQL dump or a lightning-fast raw physical copy, DB Guard gives you the tools to manage backups exactly how you want.
+            </p>
+        </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Manual Backups -->
+            <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300">
+                <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-6">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path></svg>
+                </div>
+                <h3 class="text-xl font-bold text-slate-900 mb-4">Manual Snapshots</h3>
+                <p class="text-slate-600 leading-relaxed mb-6">Trigger instant backups for single or multiple databases. Choose between SQL and RAW modes depending on your needs.</p>
+                <span class="text-sm font-bold text-blue-600 group cursor-pointer flex items-center gap-2">Explore Manual Mode <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg></span>
+            </div>
+            <!-- Backup History -->
+            <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300">
+                <div class="w-12 h-12 bg-cyan-100 text-cyan-600 rounded-2xl flex items-center justify-center mb-6">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <h3 class="text-xl font-bold text-slate-900 mb-4">Historical Tracking</h3>
+                <p class="text-slate-600 leading-relaxed mb-6">Every backup is logged with source indicators (Manual/Scheduled). One-click restore makes recovery effortless.</p>
+                <span class="text-sm font-bold text-cyan-600 group cursor-pointer flex items-center gap-2">View History Page <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg></span>
+            </div>
+            <!-- Raw Mode -->
+            <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300">
+                <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center mb-6">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                </div>
+                <h3 class="text-xl font-bold text-slate-900 mb-4">Fast Raw Copy</h3>
+                <p class="text-slate-600 leading-relaxed mb-6">Perform high-speed physical directory copies for massive databases, ensuring minimal downtime during backup cycles.</p>
+                <span class="text-sm font-bold text-amber-600 group cursor-pointer flex items-center gap-2">How Raw Mode Works <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg></span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Smart Scheduling Section -->
+    <section id="schedules" class="py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <div class="order-2 lg:order-1 bg-slate-900 rounded-3xl p-8 lg:p-12 relative overflow-hidden group">
+                    <div class="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-transparent"></div>
+                    <div class="relative space-y-4">
+                        <div class="flex items-center gap-4 bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+                            <div class="w-10 h-10 rounded-lg bg-green-500/20 text-green-500 flex items-center justify-center"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg></div>
+                            <div>
+                                <div class="text-white font-bold text-sm">Nightly Production Sync</div>
+                                <div class="text-slate-400 text-xs">Daily at 02:00 AM</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4 bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+                            <div class="w-10 h-10 rounded-lg bg-blue-500/20 text-blue-500 flex items-center justify-center"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg></div>
+                            <div>
+                                <div class="text-white font-bold text-sm">Weekly Archive</div>
+                                <div class="text-slate-400 text-xs">Every Sunday at 11:00 PM</div>
+                            </div>
+                        </div>
+                        <div class="h-32"></div>
+                    </div>
+                </div>
+                <div class="order-1 lg:order-2">
+                    <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-6">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <h2 class="text-3xl lg:text-4xl font-extrabold text-slate-900 mb-6">Set It and Forget It</h2>
+                    <p class="text-lg text-slate-600 mb-8 leading-relaxed">
+                        Automate your backup workflows with granular control. Define daily, weekly, or monthly schedules and let the app handle the rest in the background.
+                    </p>
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <div class="text-2xl font-bold text-slate-900 mb-1">Background</div>
+                            <p class="text-slate-500 text-sm">Runs as a silent service with zero impact.</p>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-slate-900 mb-1">Notifications</div>
+                            <p class="text-slate-500 text-sm">Get notified the moment a backup finishes.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Diagnostics Section -->
+    <section id="diagnostics" class="py-24 bg-slate-900 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <div>
+                    <h2 class="text-3xl lg:text-4xl font-extrabold mb-6">Powerful System Diagnostics</h2>
+                    <p class="text-lg text-slate-400 mb-8 leading-relaxed">
+                        Troubleshoot database issues instantly. Our diagnostic suite identifies port conflicts (like the common 3306 error) and offers one-click fixes.
+                    </p>
+                    <div class="space-y-6">
+                        <div class="flex gap-4">
+                            <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-red-500/20 text-red-500 flex items-center justify-center font-bold">!</div>
+                            <div>
+                                <h4 class="font-bold text-slate-100">Conflict Detection</h4>
+                                <p class="text-slate-400 text-sm">Detect which process is blocking your MySQL port.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-green-500/20 text-green-500 flex items-center justify-center font-bold">✓</div>
+                            <div>
+                                <h4 class="font-bold text-slate-100">One-Click Kill</h4>
+                                <p class="text-slate-400 text-sm">Instantly free up ports without opening a terminal.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-slate-800 rounded-3xl p-4 lg:p-8 border border-slate-700 shadow-2xl">
+                    <div class="bg-slate-900 rounded-xl overflow-hidden font-mono text-xs lg:text-sm p-6 space-y-2">
+                        <div class="text-slate-500">// Running diagnostics...</div>
+                        <div class="text-slate-300">Checking port 3306... <span class="text-red-400">FAILED</span></div>
+                        <div class="text-slate-300">Process found: mysqld.exe (PID: 4520)</div>
+                        <div class="text-cyan-400 cursor-pointer hover:underline">> Fix conflict now?</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="py-24 bg-cyan-600 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-t from-cyan-700 to-transparent opacity-50"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+            <h2 class="text-4xl lg:text-5xl font-extrabold text-white mb-8 tracking-tight">Ready to Secure Your Data?</h2>
+            <p class="text-xl text-cyan-100 max-w-2xl mx-auto mb-12">
+                Join thousands of developers and DBAs who trust DB Guard for their local and production MySQL backups.
+            </p>
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-6">
+                <a href="#" class="w-full sm:w-auto bg-white text-cyan-700 px-10 py-4 rounded-2xl text-xl font-bold hover:bg-slate-900 hover:text-white transition-all shadow-2xl">Start Free Download</a>
+                <p class="text-cyan-200 font-medium">Compatible with Windows 10, 11+</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 bg-white border-t border-slate-100 text-center">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-center gap-2 mb-8">
+                <div class="w-6 h-6 bg-cyan-600 rounded flex items-center justify-center">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 1.105 1.79 2 4 2s4-.895 4-2V7M4 7c0 1.105 1.79 2 4 2s4-.895 4-2M4 7c0-1.105 1.79-2 4-2s4 .895 4 2m0 5c0 1.105-1.79 2-4 2s-4-.895-4-2"></path></svg>
+                </div>
+                <span class="text-lg font-bold tracking-tight text-slate-900">DB<span class="text-cyan-600">Guard</span></span>
+            </div>
+            <p class="text-slate-500 text-sm font-medium">© 2026 DB Guard App. All rights reserved.</p>
+        </div>
+    </footer>
+
+</body>
+</html>
