@@ -42,13 +42,21 @@ interface DatabaseInfo {
 }
 
 const Databases = () => {
-  const { 
-    host, port, user, password, 
-    setHost, setPort, setUser, setPassword, 
-    backupPath, setBackupPath,
-    compressBackups, mysqlDataPath 
+  const {
+    host,
+    port,
+    user,
+    password,
+    setHost,
+    setPort,
+    setUser,
+    setPassword,
+    backupPath,
+    setBackupPath,
+    compressBackups,
+    mysqlDataPath,
   } = useSettingsStore();
-  
+
   const [services, setServices] = useState<DetectedService[]>([]);
   const [databases, setDatabases] = useState<DatabaseInfo[]>([]);
   const [loading, setLoading] = useState(false);
@@ -58,7 +66,7 @@ const Databases = () => {
   const [dbsToBackup, setDbsToBackup] = useState<string[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isBackingUp, setIsBackingUp] = useState(false);
-  
+
   // New Milestone 7 Options
   const [backupMode, setBackupMode] = useState<"sql" | "raw">("sql");
   const [shouldCompress, setShouldCompress] = useState(compressBackups);
@@ -82,10 +90,18 @@ const Databases = () => {
         user,
         password,
       });
-      
-      const systemDbs = ["information_schema", "mysql", "performance_schema", "sys", "phpmyadmin"];
-      const userDbs = result.filter(db => !systemDbs.includes(db.name.toLowerCase()));
-      
+
+      const systemDbs = [
+        "information_schema",
+        "mysql",
+        "performance_schema",
+        "sys",
+        "phpmyadmin",
+      ];
+      const userDbs = result.filter(
+        (db) => !systemDbs.includes(db.name.toLowerCase()),
+      );
+
       setDatabases(userDbs);
       toast.success(`Connected to ${host}`);
     } catch (err) {
@@ -118,19 +134,28 @@ const Databases = () => {
 
     try {
       const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-      const summaryName = dbsToBackup.length > 1 ? `${dbsToBackup.length} Databases` : dbsToBackup[0];
-      const suffix = dbsToBackup.length > 1 ? `batch_${dbsToBackup.length}_dbs` : dbsToBackup[0];
-      
+      const summaryName =
+        dbsToBackup.length > 1
+          ? `${dbsToBackup.length} Databases`
+          : dbsToBackup[0];
+      const suffix =
+        dbsToBackup.length > 1
+          ? `batch_${dbsToBackup.length}_dbs`
+          : dbsToBackup[0];
+
       let finalPath = "";
       let result = "";
 
       if (backupMode === "sql") {
         const sqlFileName = `${suffix}_${timestamp}.sql`;
         const sqlPath = `${backupPath}\\${sqlFileName}`;
-        
+
         // 1. Run standard backup
         result = await invoke("run_backup", {
-          host, port, user, password,
+          host,
+          port,
+          user,
+          password,
           databases: dbsToBackup,
           destPath: sqlPath,
         });
@@ -140,7 +165,10 @@ const Databases = () => {
         // 2. Optional compression
         if (shouldCompress) {
           const gzPath = `${sqlPath}.gz`;
-          await invoke("compress_file", { sourcePath: sqlPath, destPath: gzPath });
+          await invoke("compress_file", {
+            sourcePath: sqlPath,
+            destPath: gzPath,
+          });
           // Remove original SQL file after compression
           await invoke("delete_file", { path: sqlPath });
           finalPath = gzPath;
@@ -150,7 +178,7 @@ const Databases = () => {
         // We handle one DB at a time for raw backup to keep it simple
         const destDir = `${backupPath}\\RAW_${suffix}_${timestamp}`;
         const sourceDir = `${mysqlDataPath}\\${dbsToBackup[0]}`;
-        
+
         result = await invoke("run_raw_backup", {
           sourceDir,
           destDir,
@@ -184,7 +212,10 @@ const Databases = () => {
     } catch (err) {
       toast.error(`Backup failed: ${err}`);
       await addBackup({
-        database_name: dbsToBackup.length > 1 ? `${dbsToBackup.length} Databases` : dbsToBackup[0],
+        database_name:
+          dbsToBackup.length > 1
+            ? `${dbsToBackup.length} Databases`
+            : dbsToBackup[0],
         databases: JSON.stringify(dbsToBackup),
         timestamp: new Date().toISOString(),
         file_size: 0,
@@ -214,24 +245,36 @@ const Databases = () => {
     <div className="p-8 max-w-6xl mx-auto space-y-8">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold tracking-tight">Databases</h1>
-        <Button onClick={detectServices} variant="outline" size="sm" className="rounded-md">
+        <Button
+          onClick={detectServices}
+          variant="outline"
+          size="sm"
+          className="rounded-md"
+        >
           <RefreshCw className="mr-2 h-4 w-4" />
           Refresh
         </Button>
       </div>
 
-      <div className="flex flex-wrap items-center gap-4 py-4 px-5 bg-secondary/20 rounded-lg border">
+      <div className="flex flex-wrap justify-between items-center gap-4 py-4 px-5 bg-secondary/20 rounded-lg border">
         <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
           Services
         </span>
         {services.length === 0 ? (
-          <span className="text-sm text-muted-foreground italic">None detected</span>
+          <span className="text-sm text-muted-foreground italic">
+            None detected
+          </span>
         ) : (
           services.map((s, i) => (
-            <div key={i} className="flex items-center gap-2 bg-background px-4 py-1.5 rounded-full border text-sm shadow-sm">
+            <div
+              key={i}
+              className="flex items-center gap-2 bg-background px-5 py-1.5 rounded-md border text-sm shadow-sm"
+            >
               <div className="h-2 w-2 rounded-full bg-green-500"></div>
               <span className="font-medium">{s.name}</span>
-              <span className="text-muted-foreground text-xs">: {s.port}</span>
+              <span className="text-muted-foreground font-semibold text-sm">
+                : {s.port}
+              </span>
             </div>
           ))
         )}
@@ -240,24 +283,59 @@ const Databases = () => {
       <div className="gap-4 p-4 border rounded-lg shadow-sm bg-card">
         <div className="grid grid-cols-2 gap-3 mb-4">
           <div className="space-y-1.5 flex-1">
-            <label className="text-xs font-semibold text-muted-foreground uppercase">Host</label>
-            <Input value={host} onChange={(e) => setHost(e.target.value)} className="h-9" />
+            <label className="text-xs font-semibold text-muted-foreground uppercase">
+              Host
+            </label>
+            <Input
+              value={host}
+              onChange={(e) => setHost(e.target.value)}
+              className="h-9"
+            />
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-muted-foreground uppercase">Port</label>
-            <Input type="number" value={port} onChange={(e) => setPort(Number(e.target.value))} className="h-9" />
+            <label className="text-xs font-semibold text-muted-foreground uppercase">
+              Port
+            </label>
+            <Input
+              type="number"
+              value={port}
+              onChange={(e) => setPort(Number(e.target.value))}
+              className="h-9"
+            />
           </div>
           <div className="space-y-1.5 flex-1">
-            <label className="text-xs font-semibold text-muted-foreground uppercase">Username</label>
-            <Input value={user} onChange={(e) => setUser(e.target.value)} className="h-9" />
+            <label className="text-xs font-semibold text-muted-foreground uppercase">
+              Username
+            </label>
+            <Input
+              value={user}
+              onChange={(e) => setUser(e.target.value)}
+              className="h-9"
+            />
           </div>
           <div className="space-y-1.5 flex-1">
-            <label className="text-xs font-semibold text-muted-foreground uppercase">Password</label>
-            <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="None" className="h-9" />
+            <label className="text-xs font-semibold text-muted-foreground uppercase">
+              Password
+            </label>
+            <Input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="None"
+              className="h-9"
+            />
           </div>
         </div>
-        <Button onClick={fetchDatabases} disabled={loading} className="w-full h-9 font-semibold">
-          {loading ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <Database className="mr-2 h-4 w-4" />}
+        <Button
+          onClick={fetchDatabases}
+          disabled={loading}
+          className="w-full h-9 font-semibold"
+        >
+          {loading ? (
+            <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Database className="mr-2 h-4 w-4" />
+          )}
           Check Databases
         </Button>
       </div>
@@ -273,33 +351,60 @@ const Databases = () => {
       {databases.length > 0 && (
         <div className="space-y-4">
           <div className="flex items-center justify-between border-b pb-2">
-            <h2 className="text-lg font-medium">Available Databases ({databases.length})</h2>
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" onClick={toggleSelectAll}>
-                {selectedDbs.length === databases.length ? "Deselect All" : "Select All"}
+            <h2 className="text-lg font-medium">
+              Available Databases ({databases.length})
+            </h2>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={toggleSelectAll}>
+              {selectedDbs.length === databases.length
+                ? "Deselect All"
+                : "Select All"}
+            </Button>
+            {selectedDbs.length > 0 && (
+              <Button
+                size="sm"
+                onClick={() => {
+                  setDbsToBackup(selectedDbs);
+                  setIsDialogOpen(true);
+                }}
+              >
+                <ShieldCheck className="mr-2 h-4 w-4" />
+                Backup Selected ({selectedDbs.length})
               </Button>
-              {selectedDbs.length > 0 && (
-                <Button size="sm" onClick={() => { setDbsToBackup(selectedDbs); setIsDialogOpen(true); }}>
-                  <ShieldCheck className="mr-2 h-4 w-4" />
-                  Backup Selected ({selectedDbs.length})
-                </Button>
-              )}
-            </div>
+            )}
           </div>
 
           <div className="border rounded-xl overflow-hidden divide-y bg-card shadow-sm">
             {databases.map((db, i) => {
               const isSelected = selectedDbs.includes(db.name);
               return (
-                <div key={i} className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
+                <div
+                  key={i}
+                  className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors"
+                >
                   <div className="flex items-center gap-6">
-                    <Checkbox checked={isSelected} onCheckedChange={() => toggleDbSelection(db.name)} className="h-5 w-5" />
+                    <Checkbox
+                      checked={isSelected}
+                      onCheckedChange={() => toggleDbSelection(db.name)}
+                      className="h-5 w-5"
+                    />
                     <div className="flex items-center gap-3">
-                      <Database className={`h-5 w-5 ${isSelected ? "text-primary" : "text-muted-foreground"}`} />
+                      <Database
+                        className={`h-5 w-5 ${isSelected ? "text-primary" : "text-muted-foreground"}`}
+                      />
                       <span className="font-medium text-sm">{db.name}</span>
                     </div>
                   </div>
-                  <Button variant="outline" size="sm" className="text-sm h-8 rounded-md" onClick={() => { setDbsToBackup([db.name]); setIsDialogOpen(true); }}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-sm h-8 rounded-md"
+                    onClick={() => {
+                      setDbsToBackup([db.name]);
+                      setIsDialogOpen(true);
+                    }}
+                  >
                     Select <ChevronRight className="ml-1 h-3 w-3" />
                   </Button>
                 </div>
@@ -314,36 +419,41 @@ const Databases = () => {
           <DialogHeader>
             <DialogTitle>Backup Configuration</DialogTitle>
             <DialogDescription>
-              {dbsToBackup.length > 1 ? `Backing up ${dbsToBackup.length} databases` : `Backing up ${dbsToBackup[0]}`}
+              {dbsToBackup.length > 1
+                ? `Backing up ${dbsToBackup.length} databases`
+                : `Backing up ${dbsToBackup[0]}`}
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-6 py-4">
             {/* Backup Mode */}
             <div className="space-y-3">
-              <label className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Backup Mode</label>
+              <label className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                Backup Mode
+              </label>
               <div className="grid grid-cols-2 gap-3">
-                <Button 
-                  variant={backupMode === "sql" ? "default" : "outline"} 
+                <Button
+                  variant={backupMode === "sql" ? "default" : "outline"}
                   className="h-16 flex-col gap-1 rounded-xl"
                   onClick={() => setBackupMode("sql")}
                 >
                   <FileCode className="h-5 w-5" />
-                  <span className="text-xs">SQL Dump</span>
+                  <span className="text-sm">SQL Dump</span>
                 </Button>
-                <Button 
-                  variant={backupMode === "raw" ? "default" : "outline"} 
+                <Button
+                  variant={backupMode === "raw" ? "default" : "outline"}
                   className="h-16 flex-col gap-1 rounded-xl"
                   disabled={dbsToBackup.length > 1}
                   onClick={() => setBackupMode("raw")}
                 >
                   <Zap className="h-5 w-5" />
-                  <span className="text-xs">Raw Copy</span>
+                  <span className="text-sm">Raw Copy</span>
                 </Button>
               </div>
               {backupMode === "raw" && (
-                <p className="text-[10px] text-amber-600 font-medium bg-amber-50 p-2 rounded border border-amber-100">
-                  Raw mode performs a fast directory copy. Ensure the database is not in active use for best consistency.
+                <p className="text-xs text-amber-600 font-medium bg-amber-50 p-2 rounded border border-amber-100">
+                  Raw mode performs a fast directory copy. Ensure the database
+                  is not in active use for best consistency.
                 </p>
               )}
             </div>
@@ -354,8 +464,17 @@ const Databases = () => {
             <div className="space-y-2">
               <label className="text-sm font-medium">Destination Folder</label>
               <div className="flex gap-2">
-                <Input value={backupPath} readOnly placeholder="Choose folder..." className="flex-1" />
-                <Button variant="outline" size="icon" onClick={pickBackupFolder}>
+                <Input
+                  value={backupPath}
+                  readOnly
+                  placeholder="Choose folder..."
+                  className="flex-1"
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={pickBackupFolder}
+                >
                   <FolderOpen className="h-4 w-4" />
                 </Button>
               </div>
@@ -364,12 +483,15 @@ const Databases = () => {
             {/* Compression Toggle (Only for SQL) */}
             {backupMode === "sql" && (
               <div className="flex items-center space-x-2 pt-2">
-                <Checkbox 
-                  id="compress-dialog" 
-                  checked={shouldCompress} 
-                  onCheckedChange={(checked) => setShouldCompress(!!checked)} 
+                <Checkbox
+                  id="compress-dialog"
+                  checked={shouldCompress}
+                  onCheckedChange={(checked) => setShouldCompress(!!checked)}
                 />
-                <label htmlFor="compress-dialog" className="text-sm font-medium leading-none cursor-pointer">
+                <label
+                  htmlFor="compress-dialog"
+                  className="text-sm font-medium leading-none cursor-pointer"
+                >
                   Compress with Gzip (.gz)
                 </label>
               </div>
@@ -377,8 +499,13 @@ const Databases = () => {
           </div>
 
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleRunBackup} disabled={!backupPath || isBackingUp}>
+            <Button variant="ghost" onClick={() => setIsDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleRunBackup}
+              disabled={!backupPath || isBackingUp}
+            >
               {isBackingUp ? "Processing..." : "Start Backup"}
             </Button>
           </DialogFooter>

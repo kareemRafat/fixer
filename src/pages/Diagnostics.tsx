@@ -99,7 +99,7 @@ const Diagnostics = () => {
             <Activity className="h-4 w-4 text-primary" />
             {title}
           </CardTitle>
-          <Badge variant={status?.is_in_use ? "default" : "secondary"} className="text-sm">
+          <Badge variant={status?.is_in_use ? "default" : "secondary"} className="text-sm rounded-sm">
             Port {defaultPort}
           </Badge>
         </div>
@@ -146,7 +146,7 @@ const Diagnostics = () => {
                   <Button 
                     variant="destructive" 
                     size="sm" 
-                    className="text-sm h-8"
+                    className="text-sm h-8 rounded-sm"
                     onClick={() => status.pid && handleKillProcess(status.pid)}
                   >
                     <Skull className="mr-1.5 h-3 w-3" />
@@ -155,7 +155,7 @@ const Diagnostics = () => {
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="text-sm h-8"
+                    className="text-sm h-8 rounded-sm"
                     onClick={() => {
                       setTargetService({name: title, type, currentPort: defaultPort});
                       setNewPort(defaultPort + 1);
@@ -198,7 +198,7 @@ const Diagnostics = () => {
 
       <Separator />
 
-      <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-1 xl:grid-cols-2 gap-6">
         <PortCard title="Web Server (Apache/Nginx)" type="apache" status={apachePort} defaultPort={80} />
         <PortCard title="MySQL / MariaDB" type="mysql" status={mysqlPort} defaultPort={3306} />
       </div>
