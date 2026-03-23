@@ -12,10 +12,25 @@
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "DBGuardX",
         "width": 1024,
         "height": 768,
-        "resizable": true
+        "resizable": true,
+        "visible": false,
+        "center": true
+      },
+      {
+        "label": "splash",
+        "title": "Loading...",
+        "width": 500,
+        "height": 450,
+        "resizable": false,
+        "decorations": false,
+        "transparent": true,
+        "alwaysOnTop": true,
+        "center": true,
+        "url": "index.html#/splash"
       }
     ],
     "security": {
