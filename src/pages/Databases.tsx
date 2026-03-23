@@ -58,6 +58,7 @@ const Databases = () => {
   } = useSettingsStore();
 
   const [services, setServices] = useState<DetectedService[]>([]);
+  const [servicesLoading, setServicesLoading] = useState(false);
   const [databases, setDatabases] = useState<DatabaseInfo[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -72,11 +73,18 @@ const Databases = () => {
   const [shouldCompress, setShouldCompress] = useState(compressBackups);
 
   const detectServices = async () => {
+    setServicesLoading(true);
     try {
-      const result: DetectedService[] = await invoke("detect_services");
-      setServices(result);
+      // Ensure spinner shows for at least 500ms for a smoother transition
+      const [result] = await Promise.all([
+        invoke("detect_services"),
+        new Promise((resolve) => setTimeout(resolve, 500)),
+      ]);
+      setServices(result as DetectedService[]);
     } catch (err) {
       console.error("Failed to detect services:", err);
+    } finally {
+      setServicesLoading(false);
     }
   };
 
@@ -259,27 +267,34 @@ const Databases = () => {
         </Button>
       </div>
 
-      <div className="flex flex-wrap justify-between items-center gap-4 py-4 px-5 bg-secondary/20 rounded-lg border">
+      <div className="flex flex-wrap justify-between items-center gap-4 py-4 px-5 bg-secondary/20 rounded-lg border min-h-[66px]">
         <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
           Services
         </span>
-        {services.length === 0 ? (
+        {servicesLoading ? (
+          <div className="flex items-center gap-2 px-5 py-1.5 animate-pulse">
+            <RefreshCw className="h-4 w-4 animate-spin text-primary" />
+            <span className="text-sm text-muted-foreground font-medium">Scanning services...</span>
+          </div>
+        ) : services.length === 0 ? (
           <span className="text-sm text-muted-foreground italic">
             None detected
           </span>
         ) : (
-          services.map((s, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-2 bg-background px-5 py-1.5 rounded-md border text-sm shadow-sm"
-            >
-              <div className="h-2 w-2 rounded-full bg-green-500"></div>
-              <span className="font-medium">{s.name}</span>
-              <span className="text-muted-foreground font-semibold text-sm">
-                : {s.port}
-              </span>
-            </div>
-          ))
+          <div className="flex flex-wrap gap-2">
+            {services.map((s, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-2 bg-background px-5 py-1.5 rounded-md border text-sm shadow-sm"
+              >
+                <div className="h-2 w-2 rounded-full bg-green-500"></div>
+                <span className="font-medium">{s.name}</span>
+                <span className="text-muted-foreground font-semibold text-sm">
+                  : {s.port}
+                </span>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 
