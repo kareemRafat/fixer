@@ -169,7 +169,7 @@ const Diagnostics = () => {
 
   const PortCard = ({ title, type, status, defaultPort }: { title: string, type: string, status: PortStatus | null, defaultPort: number }) => (
     <Card className="overflow-hidden">
-      <CardHeader className="bg-muted/30 pb-4">
+      <CardHeader className="bg-muted pb-4">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
             <Activity className="h-4 w-4 text-primary" />
@@ -317,7 +317,7 @@ const Diagnostics = () => {
 
       {/* New Custom Port Checker Section */}
       <Card>
-        <CardHeader className="bg-muted/30 pb-4">
+        <CardHeader className="bg-muted pb-4">
           <CardTitle className="text-lg flex items-center gap-2">
             <Monitor className="h-4 w-4 text-primary" />
             Custom Port Checker
@@ -333,7 +333,7 @@ const Diagnostics = () => {
               className="text-base"
               onChange={(e) => setCustomPort(e.target.value)}
             />
-            <Button onClick={handleCheckCustomPort} disabled={isCheckingCustom} className="rounded-sm">
+            <Button onClick={handleCheckCustomPort} disabled={isCheckingCustom} className="rounded-md">
               <Search className={`mr-2 h-4 w-4 ${isCheckingCustom ? "animate-spin" : ""}`} />
               Check Port
             </Button>
