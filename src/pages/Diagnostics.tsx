@@ -256,7 +256,7 @@ const Diagnostics = () => {
 
             {!status.is_in_use && (
               <div className="space-y-4">
-                <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-100 rounded-lg text-amber-700">
+                <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 rounded-lg text-amber-700 dark:text-amber-400">
                   <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
                   <p className="text-sm leading-relaxed">
                     Port {defaultPort} is not in use. If your database service should be running, check your service manager.
@@ -371,7 +371,7 @@ const Diagnostics = () => {
                 onChange={(e) => setNewPort(Number(e.target.value))}
               />
             </div>
-            <Alert className="bg-blue-50 border-blue-200 text-blue-800">
+            <Alert className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-900/30 text-blue-800 dark:text-blue-300">
               <Info className="h-4 w-4" />
               <AlertDescription className="text-sm">
                 Important: You will need to manually restart your {targetService?.name} service from your control panel after this.
@@ -387,7 +387,7 @@ const Diagnostics = () => {
 
       {/* New Identification Report Dialog */}
       <Dialog open={scanDialogOpen} onOpenChange={setScanDialogOpen}>
-        <DialogContent className="sm:max-w-3xl bg-slate-50 dark:bg-slate-900 border-border p-0 overflow-hidden shadow-2xl">
+        <DialogContent className="sm:max-w-3xl p-0 overflow-hidden shadow-2xl">
           <div className="p-8">
             <DialogHeader className="mb-6">
               <DialogTitle className="text-foreground flex items-center gap-3 text-2xl">
@@ -411,15 +411,15 @@ const Diagnostics = () => {
               headerTitle="sys-inspector"
             />
           </div>
-          <div className="bg-slate-200/30 dark:bg-slate-950/50 p-6 border-t border-border flex justify-end gap-3">
+          <DialogFooter className="bg-muted/50 p-6">
             <Button 
               variant="ghost" 
               onClick={() => setScanDialogOpen(false)} 
-              className="text-muted-foreground hover:text-foreground px-6"
+              className="text-muted-foreground hover:text-foreground px-6 mb-3 mr-2"
             >
               Terminate Session
             </Button>
-          </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

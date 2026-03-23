@@ -35,7 +35,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
       <aside className="w-64 border-r flex flex-col shrink-0">
         <div className="p-6 border-b flex items-center gap-3">
           <img src="/logo.png" alt="DBGuardX Logo" className="h-8 w-8 rounded-lg object-contain" />
-          <span className="font-bold text-xl tracking-wide text-primary">DBGuardX</span>
+          <span className="font-bold text-xl tracking-wide text-[#226694]">DBGuardX</span>
         </div>
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           <SidebarItem to="/" icon={<LayoutDashboard className="h-5 w-5" />} label="Dashboard" />

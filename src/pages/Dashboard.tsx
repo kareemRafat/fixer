@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { getBackups, BackupRecord } from "@/lib/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Database, History, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Database, History, AlertCircle, CheckCircle2, ChevronDown, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const Dashboard = () => {
   const [backups, setBackups] = useState<BackupRecord[]>([]);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -13,6 +15,10 @@ const Dashboard = () => {
     };
     fetchStats();
   }, []);
+
+  const toggleRow = (id: number) => {
+    setExpandedId(expandedId === id ? null : id);
+  };
 
   const successfulBackups = backups.filter(b => b.status === "Success").length;
   const failedBackups = backups.filter(b => b.status !== "Success").length;
@@ -51,7 +57,7 @@ const Dashboard = () => {
             <AlertCircle className="w-4 h-4 text-destructive" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-destructive">{failedBackups}</div>
+            <div className="text-2xl font-bold text-destructive dark:text-red-400">{failedBackups}</div>
           </CardContent>
         </Card>
       </div>
@@ -63,20 +69,52 @@ const Dashboard = () => {
         <CardContent>
           {backups.length > 0 ? (
             <div className="space-y-4">
-              {backups.slice(0, 5).map((b) => (
-                <div key={b.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <Database className="w-4 h-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium">{b.database_name}</p>
-                      <p className="text-xs text-muted-foreground">{new Date(b.timestamp).toLocaleString()}</p>
+              {backups.slice(0, 5).map((b) => {
+                const isFailed = b.status !== "Success";
+                const isExpanded = expandedId === b.id;
+                const statusText = isFailed ? b.status.split(":")[0] : b.status;
+                const failureReason = isFailed ? b.status.split(": ").slice(1).join(": ") : "";
+
+                return (
+                  <div key={b.id} className="flex flex-col border rounded-lg overflow-hidden transition-all">
+                    <div 
+                      className={cn(
+                        "flex items-center justify-between p-3 transition-colors",
+                        isFailed && "cursor-pointer hover:bg-muted/50"
+                      )}
+                      onClick={() => isFailed && toggleRow(b.id)}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center">
+                          {isFailed ? (
+                            isExpanded ? <ChevronDown className="w-4 h-4 text-muted-foreground mr-1" /> : <ChevronRight className="w-4 h-4 text-muted-foreground mr-1" />
+                          ) : (
+                            <div className="w-5" />
+                          )}
+                          <Database className="w-4 h-4 text-muted-foreground" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">{b.database_name}</p>
+                          <p className="text-xs text-muted-foreground">{new Date(b.timestamp).toLocaleString()}</p>
+                        </div>
+                      </div>
+                      <div className={`text-xs font-bold px-2 py-1 rounded-full ${b.status === "Success" ? "text-green-600 bg-green-50 dark:bg-green-500/10 dark:text-green-400" : "text-destructive bg-destructive/10 dark:bg-red-500/10 dark:text-red-400"}`}>
+                        {statusText}
+                      </div>
                     </div>
+                    {isFailed && isExpanded && (
+                      <div className="px-11 pb-3 pt-4 bg-muted/20">
+                        <div className="flex items-start gap-2 text-xs text-destructive dark:text-red-400 bg-destructive/5 dark:bg-red-500/5 p-2 rounded border border-destructive/10 dark:border-red-500/20">
+                          <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                          <p className="font-medium leading-relaxed">
+                            {failureReason || "No specific error reason recorded."}
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <div className={`text-xs font-bold ${b.status === "Success" ? "text-green-600" : "text-destructive"}`}>
-                    {b.status}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">No recent backup activity.</p>

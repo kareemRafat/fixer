@@ -218,9 +218,10 @@ const Databases = () => {
             ? `${dbsToBackup.length} Databases`
             : dbsToBackup[0],
         databases: JSON.stringify(dbsToBackup),
+        backup_type: backupMode,
         timestamp: new Date().toISOString(),
         file_size: 0,
-        status: "Failed",
+        status: `Failed: ${err}`,
         file_path: "N/A",
         trigger_type: "manual",
       });
@@ -346,7 +347,7 @@ const Databases = () => {
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Connection Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription className="dark:text-red-400">{error}</AlertDescription>
         </Alert>
       )}
 
@@ -453,7 +454,7 @@ const Databases = () => {
                 </Button>
               </div>
               {backupMode === "raw" && (
-                <p className="text-xs text-amber-600 font-medium bg-amber-50 p-2 rounded border border-amber-100">
+                <p className="text-xs text-amber-600 dark:text-amber-400 font-medium bg-amber-50 dark:bg-amber-900/10 p-2 rounded border border-amber-100 dark:border-amber-900/30">
                   Raw mode performs a fast directory copy. Ensure the database
                   is not in active use for best consistency.
                 </p>
