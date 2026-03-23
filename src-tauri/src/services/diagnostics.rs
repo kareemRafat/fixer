@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
 use std::process::Command;
 
+#[cfg(windows)]
+use std::os::windows::process::CommandExt;
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PortStatus {
     pub port: u16,
@@ -11,7 +14,11 @@ pub struct PortStatus {
 
 pub fn check_port_usage(port: u16) -> PortStatus {
     // Run netstat -ano | findstr :PORT
-    let output = Command::new("cmd")
+    let mut cmd = Command::new("cmd");
+    #[cfg(windows)]
+    cmd.creation_flags(0x08000000); // CREATE_NO_WINDOW
+
+    let output = cmd
         .args(["/C", &format!("netstat -ano | findstr :{}", port)])
         .output();
 
@@ -23,7 +30,11 @@ pub fn check_port_usage(port: u16) -> PortStatus {
             if let Some(pid_str) = parts.last() {
                 if let Ok(pid) = pid_str.parse::<u32>() {
                     // Try to get process name from PID
-                    let name_output = Command::new("tasklist")
+                    let mut name_cmd = Command::new("tasklist");
+                    #[cfg(windows)]
+                    name_cmd.creation_flags(0x08000000);
+
+                    let name_output = name_cmd
                         .args(["/FI", &format!("PID eq {}", pid), "/NH", "/FO", "CSV"])
                         .output();
 
@@ -58,7 +69,11 @@ pub fn check_port_usage(port: u16) -> PortStatus {
 }
 
 pub fn kill_process(pid: u32) -> Result<(), String> {
-    let output = Command::new("taskkill")
+    let mut cmd = Command::new("taskkill");
+    #[cfg(windows)]
+    cmd.creation_flags(0x08000000);
+
+    let output = cmd
         .args(["/F", "/PID", &pid.to_string()])
         .output();
 

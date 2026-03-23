@@ -57,6 +57,7 @@ const Diagnostics = () => {
   const [scanDialogOpen, setScanDialogOpen] = useState(false);
   const [scanPort, setScanPort] = useState<number | null>(null);
   const [scanResult, setScanResult] = useState<PortStatus | null>(null);
+  const [expectedService, setExpectedService] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (customResult || scanResult) {
@@ -69,8 +70,9 @@ const Diagnostics = () => {
     }
   }, [customResult, scanResult]);
 
-  const handleIdentify = async (port: number) => {
+  const handleIdentify = async (port: number, serviceType?: string) => {
     setScanPort(port);
+    setExpectedService(serviceType);
     setScanResult(null);
     setScanDialogOpen(true);
     setTerminalStep(0);
@@ -245,7 +247,7 @@ const Diagnostics = () => {
                     variant="secondary" 
                     size="sm" 
                     className="text-sm h-8 rounded-sm col-span-2 mt-1"
-                    onClick={() => handleIdentify(defaultPort)}
+                    onClick={() => handleIdentify(defaultPort, type)}
                   >
                     <Search className="mr-1.5 h-3 w-3" />
                     Identify Service
@@ -266,7 +268,7 @@ const Diagnostics = () => {
                   variant="outline" 
                   size="sm" 
                   className="w-full text-sm h-8 rounded-sm"
-                  onClick={() => handleIdentify(defaultPort)}
+                  onClick={() => handleIdentify(defaultPort, type)}
                 >
                   <Search className="mr-1.5 h-3 w-3" />
                   Identify Service
@@ -409,6 +411,7 @@ const Diagnostics = () => {
               }}
               command="netstat -ano | findstr"
               headerTitle="sys-inspector"
+              expectedService={expectedService}
             />
           </div>
           <DialogFooter className="bg-muted/50 p-6">

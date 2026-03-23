@@ -17,6 +17,7 @@ interface TerminalOutputProps {
   command?: string;
   headerTitle?: string;
   target?: string;
+  expectedService?: string;
 }
 
 export const TerminalOutput: React.FC<TerminalOutputProps> = ({
@@ -27,8 +28,23 @@ export const TerminalOutput: React.FC<TerminalOutputProps> = ({
   command = "scan",
   headerTitle = "port-inspector",
   target = "127.0.0.1",
+  expectedService,
 }) => {
   if (!port) return null;
+
+  const isExpectedService = React.useMemo(() => {
+    if (!result || !result.process_name || !expectedService) return false;
+    const name = result.process_name.toLowerCase();
+    if (expectedService === "mysql") {
+      return name.includes("mysql") || name.includes("mariadb");
+    }
+    if (expectedService === "apache") {
+      return name.includes("httpd") || name.includes("apache") || name.includes("nginx");
+    }
+    return false;
+  }, [result, expectedService]);
+
+  const hasConflict = result?.is_in_use && (!expectedService || !isExpectedService);
 
   return (
     <div className="rounded-md bg-slate-900 p-6 font-mono text-sm text-zinc-300 border border-slate-700/50 shadow-2xl min-h-[320px] flex flex-col transition-all duration-500">
@@ -60,9 +76,16 @@ export const TerminalOutput: React.FC<TerminalOutputProps> = ({
             <p className="text-primary animate-pulse italic">Establishing secure kernel connection...</p>
           ) : result.is_in_use ? (
             <>
-              <p className="text-red-400 font-bold mt-4 underline decoration-red-900/50 underline-offset-4 animate-in fade-in zoom-in-95 duration-500">
-                [!] CONFLICT DETECTED: PORT OCCUPIED
-              </p>
+              {hasConflict ? (
+                <p className="text-red-400 font-bold mt-4 underline decoration-red-900/50 underline-offset-4 animate-in fade-in zoom-in-95 duration-500">
+                  [!] CONFLICT DETECTED: PORT OCCUPIED
+                </p>
+              ) : (
+                <p className="text-emerald-400 font-bold mt-4 underline decoration-emerald-900/50 underline-offset-4 animate-in fade-in zoom-in-95 duration-500">
+                  [✓] NO CONFLICT: SERVICE IS RUNNING NORMALLY
+                </p>
+              )}
+              
               {terminalStep >= 4 && (
                 <div className="pl-4 border-l-2 border-slate-700 mt-4 space-y-2 bg-slate-800/30 p-4 rounded-r-md animate-in fade-in slide-in-from-bottom-2 duration-500 shadow-lg">
                   <div className="grid grid-cols-2 gap-x-4 gap-y-1">
@@ -73,11 +96,13 @@ export const TerminalOutput: React.FC<TerminalOutputProps> = ({
                     <span className="text-slate-500">PID       :</span>
                     <span className="text-white font-mono">{result.pid || "N/A"}</span>
                     <span className="text-slate-500">STATUS    :</span>
-                    <span className="text-red-400 font-bold">LISTENING</span>
+                    <span className={hasConflict ? "text-red-400 font-bold" : "text-emerald-400 font-bold"}>
+                      {hasConflict ? "CONFLICT" : "HEALTHY"}
+                    </span>
                   </div>
                 </div>
               )}
-              {terminalStep >= 5 && (
+              {terminalStep >= 5 && hasConflict && (
                 <div className="pt-5 border-t border-slate-700/50 mt-5 animate-in fade-in slide-in-from-bottom-4 duration-700">
                   <p className="text-slate-500 text-[10px] mb-3 tracking-widest uppercase font-bold">Administrator Override Required:</p>
                   <Button
@@ -89,6 +114,15 @@ export const TerminalOutput: React.FC<TerminalOutputProps> = ({
                     <Skull className="mr-2 h-4 w-4" />
                     EXEC KILL --FORCE {result.pid}
                   </Button>
+                </div>
+              )}
+              {terminalStep >= 5 && !hasConflict && (
+                <div className="pt-5 border-t border-slate-700/50 mt-5 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                  <p className="text-slate-500 text-[10px] mb-3 tracking-widest uppercase font-bold">System Status:</p>
+                  <div className="flex items-center gap-2 text-emerald-500 text-xs font-bold uppercase tracking-widest">
+                    <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                    Operational Integrity Verified
+                  </div>
                 </div>
               )}
             </>

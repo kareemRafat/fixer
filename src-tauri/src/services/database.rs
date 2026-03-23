@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
 use std::process::Command;
 
+#[cfg(windows)]
+use std::os::windows::process::CommandExt;
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DetectedService {
     pub name: String,
@@ -21,7 +24,11 @@ pub fn detect_services() -> Vec<DetectedService> {
 
     // On Windows, check for MySQL and Apache services using 'sc query'
     // This is a basic implementation, can be expanded
-    let output = Command::new("sc")
+    let mut cmd = Command::new("sc");
+    #[cfg(windows)]
+    cmd.creation_flags(0x08000000);
+
+    let output = cmd
         .args(["query", "type=", "service", "state=", "all"])
         .output();
 
@@ -74,7 +81,11 @@ pub fn list_databases(
     args.push("-e".to_string());
     args.push("SELECT schema_name FROM information_schema.schemata WHERE schema_name NOT IN ('information_schema', 'mysql', 'performance_schema', 'sys');".to_string());
 
-    let output = Command::new("mysql").args(&args).output();
+    let mut cmd = Command::new("mysql");
+    #[cfg(windows)]
+    cmd.creation_flags(0x08000000);
+
+    let output = cmd.args(&args).output();
 
     match output {
         Ok(output) => {
@@ -132,7 +143,11 @@ pub fn run_backup(
     args.push("--result-file".to_string());
     args.push(dest_path.to_string());
 
-    let output = Command::new("mysqldump").args(&args).output();
+    let mut cmd = Command::new("mysqldump");
+    #[cfg(windows)]
+    cmd.creation_flags(0x08000000);
+
+    let output = cmd.args(&args).output();
 
     match output {
         Ok(output) => {
@@ -177,7 +192,11 @@ pub fn run_restore(
         let source_dir = file_path;
 
         // Use robocopy to restore the directory
-        let output = Command::new("robocopy")
+        let mut cmd = Command::new("robocopy");
+        #[cfg(windows)]
+        cmd.creation_flags(0x08000000);
+
+        let output = cmd
             .args([
                 source_dir,
                 target_dir.to_str().unwrap(),
@@ -245,7 +264,11 @@ pub fn run_restore(
         create_db_args.push("-e".to_string());
         create_db_args.push(format!("CREATE DATABASE IF NOT EXISTS `{}`;", db_name));
 
-        let create_output = Command::new("mysql").args(&create_db_args).output();
+        let mut create_cmd = Command::new("mysql");
+        #[cfg(windows)]
+        create_cmd.creation_flags(0x08000000);
+
+        let create_output = create_cmd.args(&create_db_args).output();
 
         if let Ok(output) = create_output {
             if !output.status.success() {
@@ -262,7 +285,11 @@ pub fn run_restore(
         let file = std::fs::File::open(&actual_file_to_restore)
             .map_err(|e| format!("Failed to open backup file: {}", e))?;
 
-        let output = Command::new("mysql").args(&args).stdin(file).output();
+        let mut restore_cmd = Command::new("mysql");
+        #[cfg(windows)]
+        restore_cmd.creation_flags(0x08000000);
+
+        let output = restore_cmd.args(&args).stdin(file).output();
 
         // Cleanup temp file if we decompressed one
         if let Some(temp) = temp_file {
@@ -333,7 +360,11 @@ pub fn run_raw_backup(source_dir: &str, dest_dir: &str) -> Result<String, String
     }
 
     // Use robocopy on Windows for efficient directory copy
-    let output = Command::new("robocopy")
+    let mut cmd = Command::new("robocopy");
+    #[cfg(windows)]
+    cmd.creation_flags(0x08000000);
+
+    let output = cmd
         .args([source_dir, dest_dir, "/E", "/MT:32", "/R:3", "/W:5"])
         .output();
 

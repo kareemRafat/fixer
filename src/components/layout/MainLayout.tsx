@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Database, History, Activity, Settings, Menu } from "lucide-react";
+import { LayoutDashboard, Database, History, Activity, Settings, Menu, ClipboardClock } from "lucide-react";
 import { ThemeToggle } from "../ThemeToggle";
 
 interface SidebarItemProps {
@@ -42,7 +42,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
           <SidebarItem to="/databases" icon={<Database className="h-5 w-5" />} label="Databases" />
           <SidebarItem to="/backups" icon={<History className="h-5 w-5" />} label="Backups" />
           <SidebarItem to="/diagnostics" icon={<Activity className="h-5 w-5" />} label="Diagnostics" />
-          <SidebarItem to="/schedules" icon={<History className="h-5 w-5" />} label="Schedules" />
+          <SidebarItem to="/schedules" icon={<ClipboardClock className="h-5 w-5" />} label="Schedules" />
           <SidebarItem to="/settings" icon={<Settings className="h-5 w-5" />} label="Settings" />
         </nav>
         <div className="p-4 border-t mt-auto shrink-0">
