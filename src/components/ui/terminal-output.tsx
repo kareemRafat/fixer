@@ -50,9 +50,9 @@ export const TerminalOutput: React.FC<TerminalOutputProps> = ({
     <div className="rounded-md bg-slate-900 p-6 font-mono text-sm text-zinc-300 border border-slate-700/50 shadow-2xl min-h-[320px] flex flex-col transition-all duration-500">
       <div className="flex items-center gap-2 mb-4 border-b border-slate-700/50 pb-3">
         <div className="flex gap-1.5">
-          <div className="h-3 w-3 rounded-full bg-red-500/60 shadow-[0_0_8px_rgba(239,68,68,0.2)]" />
-          <div className="h-3 w-3 rounded-full bg-yellow-500/60 shadow-[0_0_8px_rgba(234,179,8,0.2)]" />
-          <div className="h-3 w-3 rounded-full bg-green-500/60 shadow-[0_0_8px_rgba(34,197,94,0.2)]" />
+          <div className="h-3 w-3 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.2)]" />
+          <div className="h-3 w-3 rounded-full bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.2)]" />
+          <div className="h-3 w-3 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.2)]" />
         </div>
         <span className="text-[10px] text-slate-500 uppercase tracking-widest ml-2">
           {headerTitle} --target {target}:{port}
@@ -108,7 +108,7 @@ export const TerminalOutput: React.FC<TerminalOutputProps> = ({
                   <Button
                     variant="destructive"
                     size="sm"
-                    className="h-9 bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-900/20 px-4 transition-all active:scale-95"
+                    className="h-9 px-4 shadow-lg shadow-red-900/20 transition-all active:scale-95"
                     onClick={() => result.pid && onKill(result.pid)}
                   >
                     <Skull className="mr-2 h-4 w-4" />

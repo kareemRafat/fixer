@@ -26,6 +26,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 
 import { TerminalOutput } from "@/components/ui/terminal-output";
@@ -58,6 +68,10 @@ const Diagnostics = () => {
   const [scanPort, setScanPort] = useState<number | null>(null);
   const [scanResult, setScanResult] = useState<PortStatus | null>(null);
   const [expectedService, setExpectedService] = useState<string | undefined>(undefined);
+
+  // Kill Confirmation State
+  const [killDialogOpen, setKillDialogOpen] = useState(false);
+  const [processToKill, setProcessToKill] = useState<{pid: number, name: string} | null>(null);
 
   useEffect(() => {
     if (customResult || scanResult) {
@@ -139,10 +153,18 @@ const Diagnostics = () => {
     }
   };
 
-  const handleKillProcess = async (pid: number) => {
+  const confirmKillProcess = (pid: number, name: string) => {
+    setProcessToKill({ pid, name });
+    setKillDialogOpen(true);
+  };
+
+  const handleKillProcess = async () => {
+    if (!processToKill) return;
     try {
-      await invoke("kill_process", { pid });
-      toast.success(`Process ${pid} terminated.`);
+      await invoke("kill_process", { pid: processToKill.pid });
+      toast.success(`Process ${processToKill.name} (${processToKill.pid}) terminated.`);
+      setKillDialogOpen(false);
+      setScanDialogOpen(false); // Close scan dialog if open
       checkPorts();
     } catch (error) {
       toast.error(`Failed to kill process: ${error}`);
@@ -225,7 +247,7 @@ const Diagnostics = () => {
                     variant="destructive" 
                     size="sm" 
                     className="text-sm h-8 rounded-sm"
-                    onClick={() => status.pid && handleKillProcess(status.pid)}
+                    onClick={() => status.pid && confirmKillProcess(status.pid, status.process_name || "Unknown")}
                   >
                     <Skull className="mr-1.5 h-3 w-3" />
                     Kill Process
@@ -347,7 +369,7 @@ const Diagnostics = () => {
                 port={customResult.port}
                 result={customResult}
                 terminalStep={terminalStep}
-                onKill={handleKillProcess}
+                onKill={(pid) => confirmKillProcess(pid, customResult.process_name || "Unknown")}
               />
             </div>
           )}
@@ -405,10 +427,7 @@ const Diagnostics = () => {
               port={scanPort}
               result={scanResult}
               terminalStep={terminalStep}
-              onKill={(pid) => {
-                handleKillProcess(pid);
-                setScanDialogOpen(false);
-              }}
+              onKill={(pid) => confirmKillProcess(pid, scanResult?.process_name || "Unknown")}
               command="netstat -ano | findstr"
               headerTitle="sys-inspector"
               expectedService={expectedService}
@@ -425,6 +444,28 @@ const Diagnostics = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Kill Process Confirmation */}
+      <AlertDialog open={killDialogOpen} onOpenChange={setKillDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will forcefully terminate the process <span className="font-mono font-bold text-foreground">"{processToKill?.name}"</span> with PID <span className="font-mono font-bold text-foreground">{processToKill?.pid}</span>. 
+              Unsaved data in that application may be lost.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleKillProcess}
+              variant="destructive"
+            >
+              Kill Process
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
