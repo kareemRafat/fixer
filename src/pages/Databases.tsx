@@ -470,16 +470,23 @@ const Databases = () => {
                   value={backupPath}
                   readOnly
                   placeholder="Choose folder..."
-                  className="flex-1"
+                  className={`flex-1 ${!backupPath ? "border-amber-500 bg-amber-50/50" : ""}`}
                 />
                 <Button
                   variant="outline"
                   size="icon"
                   onClick={pickBackupFolder}
+                  className={!backupPath ? "border-amber-500 text-amber-600 hover:bg-amber-100" : ""}
                 >
                   <FolderOpen className="h-4 w-4" />
                 </Button>
               </div>
+              {!backupPath && (
+                <p className="text-[10px] font-bold text-amber-600 uppercase flex items-center gap-1 animate-pulse">
+                  <AlertCircle className="h-3 w-3" />
+                  Destination folder is required
+                </p>
+              )}
             </div>
 
             {/* Compression Toggle (Only for SQL) */}
