@@ -1,8 +1,10 @@
 import { useState, useEffect, Fragment } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { open } from "@tauri-apps/plugin-dialog";
 import { getBackups, deleteBackupRecord, BackupRecord } from "@/lib/db";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
   Table,
@@ -23,6 +25,8 @@ import {
   Zap,
   FileCode,
   Archive,
+  FolderOpen,
+  FileUp,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -35,6 +39,19 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 import { useSettingsStore } from "@/store/useSettingsStore";
 
 const formatBytes = (bytes: number, decimals = 2) => {
@@ -57,6 +74,12 @@ const Backups = () => {
   );
   const [isRestoring, setIsRestoring] = useState(false);
   const [expandedRows, setExpandedRows] = useState<number[]>([]);
+
+  // External Restore States
+  const [isExternalDialogOpen, setIsExternalDialogOpen] = useState(false);
+  const [externalFilePath, setExternalFilePath] = useState("");
+  const [targetDbName, setTargetDbName] = useState("");
+  const [isExternalRestoring, setIsExternalRestoring] = useState(false);
 
   const fetchBackups = async () => {
     try {
@@ -137,6 +160,80 @@ const Backups = () => {
     }
   };
 
+  const pickExternalFile = async () => {
+    try {
+      const selected = await open({
+        multiple: false,
+        directory: false,
+        filters: [
+          {
+            name: "Database Backups",
+            extensions: ["sql", "gz", "zip"],
+          },
+        ],
+      });
+      if (selected && typeof selected === "string") {
+        setExternalFilePath(selected);
+        // Try to guess DB name from filename if target is empty
+        if (!targetDbName) {
+          const fileName = selected.split(/[\\/]/).pop() || "";
+          const guessedName = fileName.split(".")[0].split("_")[0];
+          setTargetDbName(guessedName);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const pickExternalFolder = async () => {
+    try {
+      const selected = await open({
+        multiple: false,
+        directory: true,
+      });
+      if (selected && typeof selected === "string") {
+        setExternalFilePath(selected);
+        if (!targetDbName) {
+          const folderName = selected.split(/[\\/]/).pop() || "";
+          setTargetDbName(folderName.replace(/^RAW_/, ""));
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleExternalRestore = async () => {
+    if (!externalFilePath || !targetDbName) {
+      toast.error("Please provide both target database and source file.");
+      return;
+    }
+
+    setIsExternalRestoring(true);
+    try {
+      const result: string = await invoke("run_restore", {
+        host,
+        port,
+        user,
+        password,
+        dbName: targetDbName,
+        filePath: externalFilePath,
+        mysqlDataPath,
+      });
+
+      toast.success(result);
+      setIsExternalDialogOpen(false);
+      setExternalFilePath("");
+      setTargetDbName("");
+    } catch (error) {
+      toast.error(`Restore failed: ${error}`);
+      console.error(error);
+    } finally {
+      setIsExternalRestoring(false);
+    }
+  };
+
   useEffect(() => {
     fetchBackups();
 
@@ -155,14 +252,25 @@ const Backups = () => {
         <h1 className="text-2xl font-semibold tracking-tight">
           Backup History
         </h1>
-        <Button
-          onClick={fetchBackups}
-          variant="outline"
-          size="sm"
-          className="rounded-md"
-        >
-          Refresh
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={() => setIsExternalDialogOpen(true)}
+            variant="outline"
+            size="sm"
+            className="rounded-md border-primary/50 text-primary hover:bg-primary/10"
+          >
+            <FileUp className="mr-2 h-4 w-4" />
+            Restore External File
+          </Button>
+          <Button
+            onClick={fetchBackups}
+            variant="outline"
+            size="sm"
+            className="rounded-md"
+          >
+            Refresh
+          </Button>
+        </div>
       </div>
 
       <div className="border rounded-lg overflow-hidden">
@@ -407,6 +515,116 @@ const Backups = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* External Restore Dialog */}
+      <Dialog open={isExternalDialogOpen} onOpenChange={setIsExternalDialogOpen}>
+        <DialogContent className="sm:max-w-md bg-slate-50 dark:bg-slate-900 border-border p-0 overflow-hidden shadow-2xl">
+          <div className="p-6">
+            <DialogHeader>
+              <DialogTitle className="text-foreground">Restore External Backup</DialogTitle>
+              <DialogDescription className="text-muted-foreground">
+                Select a SQL file or a Raw backup folder to restore into your database.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-6 py-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Target Database Name</label>
+                <Input
+                  placeholder="e.g. my_project_db"
+                  value={targetDbName}
+                  onChange={(e) => setTargetDbName(e.target.value)}
+                  className="bg-background"
+                />
+                <p className="text-xs text-muted-foreground">
+                  If the database doesn't exist, it will be created automatically.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Source File or Folder</label>
+                <div className="flex flex-col gap-2">
+                  <div className="flex gap-2">
+                    <Input
+                      value={externalFilePath}
+                      readOnly
+                      placeholder="No file/folder selected"
+                      className="flex-1 text-xs bg-background"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      className="flex-1 text-sm h-8 bg-background"
+                      onClick={pickExternalFile}
+                    >
+                      <FileCode className="mr-2 h-3 w-3" />
+                      Select SQL File
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="flex-1 text-sm  h-8 bg-background"
+                      onClick={pickExternalFolder}
+                    >
+                      <FolderOpen className="mr-2 h-3 w-3" />
+                      Select Raw Folder
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 p-3 rounded-lg">
+                <p className="text-sm text-amber-800 dark:text-amber-400 leading-relaxed font-semibold">
+                  <b className="tracking-wide">Warning:</b> Restoring will overwrite any existing data in the target database.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="bg-slate-200/30 dark:bg-slate-950/50 p-6 border-t border-border">
+            <Button
+              variant="ghost"
+              onClick={() => setIsExternalDialogOpen(false)}
+              disabled={isExternalRestoring}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              Cancel
+            </Button>
+            
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="inline-block">
+                  <Button
+                    onClick={handleExternalRestore}
+                    disabled={isExternalRestoring || !externalFilePath || !targetDbName}
+                    className="bg-primary"
+                  >
+                    {isExternalRestoring ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Restoring...
+                      </>
+                    ) : (
+                      "Perform Restore"
+                    )}
+                  </Button>
+                </div>
+              </TooltipTrigger>
+              {( !externalFilePath || !targetDbName) && !isExternalRestoring && (
+                <TooltipContent>
+                  <p>
+                    {!targetDbName && !externalFilePath 
+                      ? "Select source and target database" 
+                      : !targetDbName 
+                        ? "Enter target database name" 
+                        : "Select a source file or folder"}
+                  </p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
