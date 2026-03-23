@@ -104,7 +104,7 @@ async fn check_and_run_schedules(app: &AppHandle, pool: &SqlitePool) -> Result<(
             };
 
             match result {
-                Ok(msg) => {
+                Ok(_msg) => {
                     let mut final_path = dest_path_str.to_string();
                     let mut file_size = std::fs::metadata(&dest_path).map(|m| m.len()).unwrap_or(0);
 

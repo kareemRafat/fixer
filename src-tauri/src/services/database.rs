@@ -233,7 +233,6 @@ pub fn run_restore(
         // If it's a Gzip file, decompress it first
         if file_path.ends_with(".gz") {
             use flate2::read::GzDecoder;
-            use std::io::prelude::*;
 
             let decompressed_path = file_path.trim_end_matches(".gz").to_string();
             let mut input =
@@ -330,7 +329,6 @@ pub fn validate_backup_file(file_path: &str) -> Result<bool, String> {
 pub fn compress_file(source_path: &str, dest_path: &str) -> Result<(), String> {
     use flate2::write::GzEncoder;
     use flate2::Compression;
-    use std::io::prelude::*;
 
     let mut input = std::fs::File::open(source_path)
         .map_err(|e| format!("Failed to open source file: {}", e))?;
@@ -353,7 +351,6 @@ pub fn run_raw_backup(source_dir: &str, dest_dir: &str) -> Result<String, String
     // or use a more robust copy method like robocopy on Windows.
 
     let source_path = std::path::Path::new(source_dir);
-    let dest_path = std::path::Path::new(dest_dir);
 
     if !source_path.exists() {
         return Err(format!("Source directory does not exist: {}", source_dir));

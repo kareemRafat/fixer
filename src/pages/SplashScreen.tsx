@@ -36,9 +36,9 @@ const SplashScreen = () => {
   return (
     <div className="h-screen w-screen flex flex-col items-center justify-center bg-[#f8fafc] text-[#020817] overflow-hidden select-none border border-slate-200/50 rounded-lg shadow-2xl p-8">
       <div className="relative flex items-center justify-center mb-12">
-        <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150 animate-pulse" />
+        <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150" />
         <div className="relative z-10 p-4 bg-white rounded-2xl border border-slate-200 shadow-inner">
-          <ShieldCheck className="w-16 h-16 text-primary animate-in fade-in zoom-in duration-1000" />
+          <ShieldCheck className="w-16 h-16 text-primary" />
         </div>
         
         <div className="absolute -top-4 -right-4 p-2 bg-white rounded-lg border border-slate-200 shadow-sm animate-bounce delay-75">
