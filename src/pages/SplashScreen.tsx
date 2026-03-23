@@ -7,6 +7,9 @@ const SplashScreen = () => {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
+    // Show window as soon as component mounts
+    invoke("show_splashscreen").catch(console.error);
+
     const steps = [
       { message: "Connecting to database services...", progress: 20 },
       { message: "Verifying security protocols...", progress: 45 },
@@ -38,7 +41,21 @@ const SplashScreen = () => {
       <div className="relative flex items-center justify-center mb-12">
         <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150" />
         <div className="relative z-10 p-4 bg-white rounded-2xl border border-slate-200 shadow-inner">
-          <ShieldCheck className="w-16 h-16 text-primary" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="64"
+            height="64"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-primary"
+          >
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
+            <path d="m9 12 2 2 4-4" />
+          </svg>
         </div>
         
         <div className="absolute -top-4 -right-4 p-2 bg-white rounded-lg border border-slate-200 shadow-sm animate-bounce delay-75">

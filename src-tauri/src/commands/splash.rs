@@ -12,3 +12,11 @@ pub async fn close_splashscreen<R: Runtime>(app: tauri::AppHandle<R>) {
         main_window.set_focus().unwrap();
     }
 }
+
+#[tauri::command]
+pub async fn show_splashscreen<R: Runtime>(app: tauri::AppHandle<R>) {
+    // Show splashscreen
+    if let Some(splash) = app.get_webview_window("splash") {
+        splash.show().unwrap();
+    }
+}

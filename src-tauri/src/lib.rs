@@ -30,7 +30,8 @@ pub fn run() {
             commands::diagnostics::check_port_status,
             commands::diagnostics::kill_process,
             commands::diagnostics::fix_port_conflict,
-            commands::splash::close_splashscreen
+            commands::splash::close_splashscreen,
+            commands::splash::show_splashscreen
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

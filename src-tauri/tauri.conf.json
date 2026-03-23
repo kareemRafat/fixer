@@ -30,7 +30,8 @@
         "transparent": true,
         "alwaysOnTop": true,
         "center": true,
-        "url": "index.html#/splash"
+        "url": "index.html#/splash",
+        "visible": false
       }
     ],
     "security": {
