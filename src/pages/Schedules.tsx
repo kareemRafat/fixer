@@ -22,7 +22,7 @@ import { getSchedules, addSchedule, updateSchedule, deleteSchedule, Schedule } f
 import { invoke } from "@tauri-apps/api/core";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { toast } from 'sonner';
-import { ChevronDown, ChevronRight, Database as DbIcon, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronRight, Database as DbIcon } from "lucide-react";
 
 const Schedules: React.FC = () => {
     const [schedules, setSchedules] = useState<Schedule[]>([]);
@@ -119,9 +119,9 @@ const Schedules: React.FC = () => {
     const toggleDatabaseSelection = (db: string) => {
         const currentDbs = currentSchedule?.databases?.split(',').filter(Boolean) || [];
         const newDbs = currentDbs.includes(db)
-            ? currentDbs.filter(d => d !== db)
+            ? currentDbs.filter((d: string) => d !== db)
             : [...currentDbs, db];
-        setCurrentSchedule(s => ({ ...s, databases: newDbs.join(',') }));
+        setCurrentSchedule((s: any) => ({ ...s, databases: newDbs.join(',') }));
     };
 
     return (
@@ -191,7 +191,7 @@ const Schedules: React.FC = () => {
                                                         <div className="pl-12 space-y-2">
                                                             <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Included Databases:</h4>
                                                             <div className="flex flex-wrap gap-2">
-                                                                {dbList.map((db, idx) => (
+                                                                {dbList.map((db: string, idx: number) => (
                                                                     <div key={idx} className="flex items-center gap-1.5 bg-background border rounded-md px-2 py-1 text-sm shadow-sm">
                                                                         <DbIcon className="h-3 w-3 text-primary" />
                                                                         <span>{db}</span>
@@ -219,7 +219,7 @@ const Schedules: React.FC = () => {
                     <div className="space-y-4 py-4">
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="name" className="text-right">Name</Label>
-                            <Input id="name" value={currentSchedule?.name} onChange={e => setCurrentSchedule(s => ({...s, name: e.target.value}))} className="col-span-3" />
+                            <Input id="name" value={currentSchedule?.name} onChange={e => setCurrentSchedule((s: any) => ({...s, name: e.target.value}))} className="col-span-3" />
                         </div>
                         
                         <div className="grid grid-cols-4 items-start gap-4">
@@ -243,7 +243,7 @@ const Schedules: React.FC = () => {
 
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="frequency" className="text-right">Frequency</Label>
-                            <Select value={currentSchedule?.frequency} onValueChange={(v: any) => setCurrentSchedule(s => ({...s, frequency: v}))}>
+                            <Select value={currentSchedule?.frequency} onValueChange={(v: any) => setCurrentSchedule((s: any) => ({...s, frequency: v}))}>
                                 <SelectTrigger className="col-span-3">
                                     <SelectValue placeholder="Select frequency" />
                                 </SelectTrigger>
@@ -257,7 +257,7 @@ const Schedules: React.FC = () => {
                          {currentSchedule?.frequency === 'weekly' && (
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label className="text-right">Day of Week</Label>
-                                 <Select value={currentSchedule?.day_of_week?.toString()} onValueChange={(v) => setCurrentSchedule(s => ({...s, day_of_week: Number(v)}))}>
+                                 <Select value={currentSchedule?.day_of_week?.toString()} onValueChange={(v) => setCurrentSchedule((s: any) => ({...s, day_of_week: Number(v)}))}>
                                      <SelectTrigger className="col-span-3">
                                          <SelectValue placeholder="Select day" />
                                      </SelectTrigger>
@@ -276,12 +276,12 @@ const Schedules: React.FC = () => {
                         {currentSchedule?.frequency === 'monthly' && (
                              <div className="grid grid-cols-4 items-center gap-4">
                                  <Label className="text-right">Day of Month</Label>
-                                 <Input type="number" min={1} max={31} value={currentSchedule?.day_of_month} onChange={e => setCurrentSchedule(s => ({...s, day_of_month: Number(e.target.value)}))} className="col-span-3" />
+                                 <Input type="number" min={1} max={31} value={currentSchedule?.day_of_month} onChange={e => setCurrentSchedule((s: any) => ({...s, day_of_month: Number(e.target.value)}))} className="col-span-3" />
                              </div>
                         )}
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="time" className="text-right">Time</Label>
-                            <Input id="time" type="time" value={currentSchedule?.time} onChange={e => setCurrentSchedule(s => ({...s, time: e.target.value}))} className="col-span-3" />
+                            <Input id="time" type="time" value={currentSchedule?.time} onChange={e => setCurrentSchedule((s: any) => ({...s, time: e.target.value}))} className="col-span-3" />
                         </div>
                         <div className="flex justify-end pt-4">
                             <Button onClick={handleSave} className="rounded-md">Save</Button>

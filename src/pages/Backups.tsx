@@ -637,8 +637,7 @@ const Backups = () => {
             </Button>
 
             <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="inline-block">
+              <TooltipTrigger>
                   <Button
                     onClick={handleExternalRestore}
                     disabled={
@@ -655,7 +654,6 @@ const Backups = () => {
                       "Perform Restore"
                     )}
                   </Button>
-                </div>
               </TooltipTrigger>
               {(!externalFilePath || !targetDbName) && !isExternalRestoring && (
                 <TooltipContent>

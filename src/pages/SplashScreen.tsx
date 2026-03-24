@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { ShieldCheck, Database, Server, Lock } from "lucide-react";
+import { Database, Server, Lock } from "lucide-react";
 
 const SplashScreen = () => {
   const [status, setStatus] = useState("Initializing DBGuardX...");

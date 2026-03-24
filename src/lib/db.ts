@@ -81,6 +81,19 @@ export interface BackupRecord {
   trigger_type: "manual" | "scheduled";
 }
 
+export interface Schedule {
+  id: number;
+  name: string;
+  databases: string;
+  frequency: "daily" | "weekly" | "monthly";
+  time: string;
+  day_of_week?: number;
+  day_of_month?: number;
+  backup_type: "sql" | "raw";
+  is_active: boolean;
+  last_run?: string;
+}
+
 export const addBackup = async (backup: Omit<BackupRecord, "id">) => {
   const database = await getDb();
   await database.execute(
