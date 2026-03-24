@@ -79,7 +79,7 @@ pub fn list_databases(
     }
 
     args.push("-e".to_string());
-    args.push("SELECT schema_name FROM information_schema.schemata WHERE schema_name NOT IN ('information_schema', 'mysql', 'performance_schema', 'sys');".to_string());
+    args.push("SELECT table_schema, COUNT(*), SUM(data_length + index_length) / 1024 / 1024 FROM information_schema.tables WHERE table_schema NOT IN ('information_schema', 'mysql', 'performance_schema', 'sys') GROUP BY table_schema;".to_string());
 
     let mut cmd = Command::new("mysql");
     #[cfg(windows)]
@@ -95,11 +95,14 @@ pub fn list_databases(
                 for line in stdout.lines().skip(1) {
                     // Skip header
                     if !line.trim().is_empty() {
-                        dbs.push(DatabaseInfo {
-                            name: line.trim().to_string(),
-                            tables_count: 0, // Placeholder
-                            size_mb: 0.0,    // Placeholder
-                        });
+                        let parts: Vec<&str> = line.split('\t').collect();
+                        if parts.len() >= 3 {
+                            dbs.push(DatabaseInfo {
+                                name: parts[0].to_string(),
+                                tables_count: parts[1].parse().unwrap_or(0),
+                                size_mb: parts[2].parse().unwrap_or(0.0),
+                            });
+                        }
                     }
                 }
                 Ok(dbs)

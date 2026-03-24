@@ -10,10 +10,13 @@ import {
   ChevronRight,
   Zap,
   FileCode,
+  Table2,
+  HardDrive,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -399,32 +402,51 @@ const Databases = () => {
               return (
                 <div
                   key={i}
-                  className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors"
+                  className="group flex items-center justify-between p-4 hover:bg-muted/30 transition-all"
                 >
                   <div className="flex items-center gap-6">
                     <Checkbox
                       checked={isSelected}
                       onCheckedChange={() => toggleDbSelection(db.name)}
-                      className="h-5 w-5"
+                      className="h-5 w-5 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                     />
-                    <div className="flex items-center gap-3">
-                      <Database
-                        className={`h-5 w-5 ${isSelected ? "text-primary" : "text-muted-foreground"}`}
-                      />
-                      <span className="font-medium text-sm">{db.name}</span>
+                    <div className="flex items-center gap-4">
+                      <div className={`p-2 rounded-lg transition-colors ${isSelected ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
+                        <Database className="h-5 w-5" />
+                      </div>
+                      <div className="flex flex-col gap-0.5">
+                        <span className="font-semibold text-sm tracking-tight">{db.name}</span>
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-1 text-[11px] text-muted-foreground font-medium uppercase tracking-wider">
+                            <Table2 className="h-3 w-3" />
+                            {db.tables_count} tables
+                          </div>
+                          <div className="flex items-center gap-1 text-[11px] text-muted-foreground font-medium uppercase tracking-wider border-l pl-3">
+                            <HardDrive className="h-3 w-3" />
+                            {db.size_mb.toFixed(2)} MB
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-sm h-8 rounded-md"
-                    onClick={() => {
-                      setDbsToBackup([db.name]);
-                      setIsDialogOpen(true);
-                    }}
-                  >
-                    Select <ChevronRight className="ml-1 h-3 w-3" />
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    {isSelected && (
+                      <Badge variant="secondary" className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5">
+                        Selected
+                      </Badge>
+                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs h-8 px-3 rounded-lg opacity-80 group-hover:opacity-100 transition-opacity"
+                      onClick={() => {
+                        setDbsToBackup([db.name]);
+                        setIsDialogOpen(true);
+                      }}
+                    >
+                      Backup <ChevronRight className="ml-1 h-3 w-3" />
+                    </Button>
+                  </div>
                 </div>
               );
             })}
