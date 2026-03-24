@@ -286,16 +286,20 @@ const Databases = () => {
         ) : (
           <div className="flex flex-wrap gap-2">
             {services.map((s, i) => (
-              <div
+              <button
                 key={i}
-                className="flex items-center gap-2 bg-background px-5 py-1.5 rounded-md border text-sm shadow-sm"
+                onClick={() => {
+                  setPort(s.port);
+                  toast.info(`Set port to ${s.port} for ${s.name}`);
+                }}
+                className="flex items-center gap-2 bg-background hover:bg-muted/50 px-5 py-1.5 rounded-md border text-sm shadow-sm transition-colors group"
               >
                 <div className="h-2 w-2 rounded-full bg-green-500"></div>
                 <span className="font-medium">{s.name}</span>
                 <span className="text-muted-foreground font-semibold text-sm">
                   : {s.port}
                 </span>
-              </div>
+              </button>
             ))}
           </div>
         )}

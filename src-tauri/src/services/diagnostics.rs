@@ -13,48 +13,51 @@ pub struct PortStatus {
 }
 
 pub fn check_port_usage(port: u16) -> PortStatus {
-    // Run netstat -ano | findstr :PORT
+    // Run netstat -ano
     let mut cmd = Command::new("cmd");
     #[cfg(windows)]
     cmd.creation_flags(0x08000000); // CREATE_NO_WINDOW
 
     let output = cmd
-        .args(["/C", &format!("netstat -ano | findstr :{}", port)])
+        .args(["/C", "netstat -ano"])
         .output();
 
     if let Ok(output) = output {
         let stdout = String::from_utf8_lossy(&output.stdout);
-        if let Some(line) = stdout.lines().next() {
-            // Typical line: TCP    0.0.0.0:3306           0.0.0.0:0              LISTENING       1234
+        let port_suffix = format!(":{}", port);
+        
+        for line in stdout.lines() {
             let parts: Vec<&str> = line.split_whitespace().collect();
-            if let Some(pid_str) = parts.last() {
-                if let Ok(pid) = pid_str.parse::<u32>() {
-                    // Try to get process name from PID
-                    let mut name_cmd = Command::new("tasklist");
-                    #[cfg(windows)]
-                    name_cmd.creation_flags(0x08000000);
+            // Typical line: TCP    0.0.0.0:3306           0.0.0.0:0              LISTENING       1234
+            if parts.len() >= 4 && parts[1].ends_with(&port_suffix) && parts[parts.len()-2] == "LISTENING" {
+                if let Some(pid_str) = parts.last() {
+                    if let Ok(pid) = pid_str.parse::<u32>() {
+                        // Try to get process name from PID
+                        let mut name_cmd = Command::new("tasklist");
+                        #[cfg(windows)]
+                        name_cmd.creation_flags(0x08000000);
 
-                    let name_output = name_cmd
-                        .args(["/FI", &format!("PID eq {}", pid), "/NH", "/FO", "CSV"])
-                        .output();
+                        let name_output = name_cmd
+                            .args(["/FI", &format!("PID eq {}", pid), "/NH", "/FO", "CSV"])
+                            .output();
 
-                    let mut process_name = None;
-                    if let Ok(name_out) = name_output {
-                        let name_stdout = String::from_utf8_lossy(&name_out.stdout);
-                        // Typical output: "mysqld.exe","1234","Services","0","45,678 K"
-                        if let Some(name_line) = name_stdout.lines().next() {
-                            if let Some(name) = name_line.split(',').next() {
-                                process_name = Some(name.trim_matches('"').to_string());
+                        let mut process_name = None;
+                        if let Ok(name_out) = name_output {
+                            let name_stdout = String::from_utf8_lossy(&name_out.stdout);
+                            if let Some(name_line) = name_stdout.lines().next() {
+                                if let Some(name) = name_line.split(',').next() {
+                                    process_name = Some(name.trim_matches('"').to_string());
+                                }
                             }
                         }
-                    }
 
-                    return PortStatus {
-                        port,
-                        is_in_use: true,
-                        process_name,
-                        pid: Some(pid),
-                    };
+                        return PortStatus {
+                            port,
+                            is_in_use: true,
+                            process_name,
+                            pid: Some(pid),
+                        };
+                    }
                 }
             }
         }

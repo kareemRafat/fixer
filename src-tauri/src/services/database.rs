@@ -1,3 +1,4 @@
+use crate::services::diagnostics::check_port_usage;
 use serde::{Deserialize, Serialize};
 use std::process::Command;
 
@@ -21,9 +22,46 @@ pub struct DatabaseInfo {
 
 pub fn detect_services() -> Vec<DetectedService> {
     let mut services = Vec::new();
+    let mut detected_ports = std::collections::HashSet::new();
 
-    // On Windows, check for MySQL and Apache services using 'sc query'
-    // This is a basic implementation, can be expanded
+    // 1. Port-based detection (Most reliable for all stacks)
+    let mysql_ports = [3306, 3307, 3308];
+    for &port in &mysql_ports {
+        let status = check_port_usage(port);
+        if status.is_in_use {
+            let name = status.process_name.unwrap_or_else(|| "MySQL/MariaDB".to_string());
+            let name_lower = name.to_lowercase();
+            if name_lower.contains("mysql") || name_lower.contains("mariadb") {
+                services.push(DetectedService {
+                    name: format!("{} ({})", name, port),
+                    status: "Running".to_string(),
+                    port,
+                    service_type: "mysql".to_string(),
+                });
+                detected_ports.insert(port);
+            }
+        }
+    }
+
+    let apache_ports = [80, 8080, 443];
+    for &port in &apache_ports {
+        let status = check_port_usage(port);
+        if status.is_in_use {
+            let name = status.process_name.unwrap_or_else(|| "Web Server".to_string());
+            let name_lower = name.to_lowercase();
+            if name_lower.contains("httpd") || name_lower.contains("apache") || name_lower.contains("nginx") {
+                services.push(DetectedService {
+                    name: format!("{} ({})", name, port),
+                    status: "Running".to_string(),
+                    port,
+                    service_type: "apache".to_string(),
+                });
+                detected_ports.insert(port);
+            }
+        }
+    }
+
+    // 2. Service-based detection (Fallback/Supplemental)
     let mut cmd = Command::new("sc");
     #[cfg(windows)]
     cmd.creation_flags(0x08000000);
@@ -36,19 +74,21 @@ pub fn detect_services() -> Vec<DetectedService> {
         let stdout = String::from_utf8_lossy(&output.stdout);
 
         // Check for common MySQL service names
-        if stdout.contains("SERVICE_NAME: MySQL") || stdout.contains("SERVICE_NAME: mariadb") {
+        if (stdout.contains("SERVICE_NAME: MySQL") || stdout.contains("SERVICE_NAME: mariadb") || stdout.contains("SERVICE_NAME: laragonmysql")) 
+           && !detected_ports.contains(&3306) {
             services.push(DetectedService {
-                name: "MySQL/MariaDB".to_string(),
-                status: "Detected".to_string(), // In a real app, parse status from sc output
+                name: "MySQL/MariaDB Service".to_string(),
+                status: "Detected".to_string(),
                 port: 3306,
                 service_type: "mysql".to_string(),
             });
         }
 
-        // Check for common Apache service names (e.g., from XAMPP)
-        if stdout.contains("SERVICE_NAME: Apache") {
+        // Check for common Apache service names
+        if (stdout.contains("SERVICE_NAME: Apache") || stdout.contains("SERVICE_NAME: laragonapache")) 
+           && !detected_ports.contains(&80) {
             services.push(DetectedService {
-                name: "Apache".to_string(),
+                name: "Apache Service".to_string(),
                 status: "Detected".to_string(),
                 port: 80,
                 service_type: "apache".to_string(),
