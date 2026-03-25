@@ -28,7 +28,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { addBackup } from "@/lib/db";
+import { addBackup, getBackups, updateBackupVerification } from "@/lib/db";
 import { useSettingsStore } from "@/store/useSettingsStore";
 
 interface DetectedService {
@@ -58,6 +58,7 @@ const Databases = () => {
     setBackupPath,
     compressBackups,
     mysqlDataPath,
+    autoVerify,
   } = useSettingsStore();
 
   const [services, setServices] = useState<DetectedService[]>([]);
@@ -218,6 +219,38 @@ const Databases = () => {
       });
 
       toast.success(result);
+
+      // Auto-Verify if enabled and it's an SQL backup
+      if (autoVerify && backupMode === "sql") {
+        toast.info("Starting automatic integrity verification...");
+        try {
+          // We need the ID of the backup we just added. 
+          // getBackups() returns them sorted by ID DESC, so the first one is our newest.
+          const allBackups = await getBackups();
+          const latestBackup = allBackups[0];
+          
+          if (latestBackup) {
+            const verifyResult: { success: boolean; message: string; tables_count: number } = await invoke("verify_backup", {
+              host,
+              port,
+              user,
+              password,
+              filePath: finalPath,
+            });
+
+            await updateBackupVerification(latestBackup.id, verifyResult.success, verifyResult.message);
+            
+            if (verifyResult.success) {
+              toast.success(`Auto-Verify: ${verifyResult.message}`);
+            } else {
+              toast.error(`Auto-Verify: ${verifyResult.message}`);
+            }
+          }
+        } catch (vErr) {
+          console.error("Auto-verification failed:", vErr);
+        }
+      }
+
       setIsDialogOpen(false);
       setDbsToBackup([]);
       setSelectedDbs([]);

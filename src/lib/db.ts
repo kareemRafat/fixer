@@ -15,7 +15,10 @@ export const getDb = async () => {
         file_size INTEGER NOT NULL,
         status TEXT NOT NULL,
         file_path TEXT NOT NULL,
-        trigger_type TEXT DEFAULT 'manual' -- "manual" or "scheduled"
+        trigger_type TEXT DEFAULT 'manual', -- "manual" or "scheduled"
+        checksum TEXT,
+        is_verified INTEGER DEFAULT 0,
+        verification_message TEXT
       )
     `);
 
@@ -38,6 +41,7 @@ export const getDb = async () => {
       await db.execute("INSERT INTO settings (key, value) VALUES ('run_on_startup', 'false')");
       await db.execute("INSERT INTO settings (key, value) VALUES ('minimize_to_tray', 'true')");
       await db.execute("INSERT INTO settings (key, value) VALUES ('start_minimized', 'false')");
+      await db.execute("INSERT INTO settings (key, value) VALUES ('auto_verify', 'false')");
     }
 
     // Migration for new settings
@@ -46,6 +50,11 @@ export const getDb = async () => {
       await db.execute("INSERT INTO settings (key, value) VALUES ('run_on_startup', 'false')");
       await db.execute("INSERT INTO settings (key, value) VALUES ('minimize_to_tray', 'true')");
       await db.execute("INSERT INTO settings (key, value) VALUES ('start_minimized', 'false')");
+    }
+
+    const autoVerify = await db.select<any[]>("SELECT * FROM settings WHERE key = 'auto_verify'");
+    if (autoVerify.length === 0) {
+      await db.execute("INSERT INTO settings (key, value) VALUES ('auto_verify', 'false')");
     }
 
     await db.execute(`
@@ -74,6 +83,15 @@ export const getDb = async () => {
       await db.execute("ALTER TABLE backups ADD COLUMN trigger_type TEXT DEFAULT 'manual'");
     } catch (e) {}
     try {
+      await db.execute("ALTER TABLE backups ADD COLUMN checksum TEXT");
+    } catch (e) {}
+    try {
+      await db.execute("ALTER TABLE backups ADD COLUMN is_verified INTEGER DEFAULT 0");
+    } catch (e) {}
+    try {
+      await db.execute("ALTER TABLE backups ADD COLUMN verification_message TEXT");
+    } catch (e) {}
+    try {
       await db.execute("ALTER TABLE schedules ADD COLUMN backup_type TEXT DEFAULT 'sql'");
     } catch (e) {}
   }
@@ -90,6 +108,9 @@ export interface BackupRecord {
   status: string;
   file_path: string;
   trigger_type: "manual" | "scheduled";
+  checksum?: string;
+  is_verified?: boolean;
+  verification_message?: string;
 }
 
 export interface Schedule {
@@ -108,7 +129,7 @@ export interface Schedule {
 export const addBackup = async (backup: Omit<BackupRecord, "id">) => {
   const database = await getDb();
   await database.execute(
-    "INSERT INTO backups (database_name, databases, backup_type, timestamp, file_size, status, file_path, trigger_type) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
+    "INSERT INTO backups (database_name, databases, backup_type, timestamp, file_size, status, file_path, trigger_type, checksum, is_verified, verification_message) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
     [
       backup.database_name, 
       backup.databases || null, 
@@ -117,14 +138,29 @@ export const addBackup = async (backup: Omit<BackupRecord, "id">) => {
       backup.file_size, 
       backup.status, 
       backup.file_path,
-      backup.trigger_type || "manual"
+      backup.trigger_type || "manual",
+      backup.checksum || null,
+      backup.is_verified ? 1 : 0,
+      backup.verification_message || null
     ]
+  );
+};
+
+export const updateBackupVerification = async (id: number, isVerified: boolean, message: string) => {
+  const database = await getDb();
+  await database.execute(
+    "UPDATE backups SET is_verified = $1, verification_message = $2 WHERE id = $3",
+    [isVerified ? 1 : 0, message, id]
   );
 };
 
 export const getBackups = async (): Promise<BackupRecord[]> => {
   const database = await getDb();
-  return await database.select<BackupRecord[]>("SELECT * FROM backups ORDER BY id DESC");
+  const rawBackups = await database.select<any[]>("SELECT * FROM backups ORDER BY id DESC");
+  return rawBackups.map(b => ({
+    ...b,
+    is_verified: b.is_verified === 1
+  }));
 };
 
 export const deleteBackupRecord = async (id: number) => {

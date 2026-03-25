@@ -429,6 +429,124 @@ pub fn run_raw_backup(source_dir: &str, dest_dir: &str) -> Result<String, String
     }
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct VerificationResult {
+    pub success: bool,
+    pub message: String,
+    pub tables_count: usize,
+    pub sandbox_name: String,
+}
+
+pub fn verify_backup(
+    host: &str,
+    port: u16,
+    user: &str,
+    password: &str,
+    file_path: &str,
+) -> Result<VerificationResult, String> {
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    let timestamp = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or(0);
+    
+    let sandbox_name = format!("dbgx_verify_{}", timestamp);
+
+    // 1. Create the sandbox database
+    let mut args = vec![
+        "-h".to_string(),
+        host.to_string(),
+        "-P".to_string(),
+        port.to_string(),
+        "-u".to_string(),
+        user.to_string(),
+    ];
+
+    if !password.is_empty() {
+        args.push(format!("-p{}", password));
+    }
+
+    let mut create_db_args = args.clone();
+    create_db_args.push("-e".to_string());
+    create_db_args.push(format!("CREATE DATABASE `{}`;", sandbox_name));
+
+    let mut create_cmd = Command::new("mysql");
+    #[cfg(windows)]
+    create_cmd.creation_flags(0x08000000);
+
+    let create_output = create_cmd.args(&create_db_args).output();
+
+    if let Err(e) = create_output {
+        return Err(format!("Failed to execute mysql to create sandbox: {}", e));
+    } else if let Ok(output) = create_output {
+        if !output.status.success() {
+            return Err(format!(
+                "Failed to create sandbox database: {}",
+                String::from_utf8_lossy(&output.stderr)
+            ));
+        }
+    }
+
+    // 2. Restore into sandbox
+    // Note: We don't need mysql_data_path for SQL verify
+    let restore_res = run_restore(host, port, user, password, &sandbox_name, file_path, "");
+
+    // 3. Check results and cleanup
+    let mut final_res = match restore_res {
+        Ok(_) => {
+            // Count tables in sandbox
+            let mut count_args = args.clone();
+            count_args.push("-N".to_string()); // Skip headers
+            count_args.push("-e".to_string());
+            count_args.push(format!(
+                "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = '{}';",
+                sandbox_name
+            ));
+
+            let mut count_cmd = Command::new("mysql");
+            #[cfg(windows)]
+            count_cmd.creation_flags(0x08000000);
+
+            let count_output = count_cmd.args(&count_args).output();
+            let tables_count = if let Ok(output) = count_output {
+                String::from_utf8_lossy(&output.stdout)
+                    .trim()
+                    .parse()
+                    .unwrap_or(0)
+            } else {
+                0
+            };
+
+            Ok(VerificationResult {
+                success: true,
+                message: format!("Verification successful. Restored {} tables.", tables_count),
+                tables_count,
+                sandbox_name: sandbox_name.clone(),
+            })
+        }
+        Err(e) => Ok(VerificationResult {
+            success: false,
+            message: format!("Verification failed during restore: {}", e),
+            tables_count: 0,
+            sandbox_name: sandbox_name.clone(),
+        }),
+    };
+
+    // 4. Cleanup sandbox
+    let mut drop_args = args.clone();
+    drop_args.push("-e".to_string());
+    drop_args.push(format!("DROP DATABASE `{}`;", sandbox_name));
+
+    let mut drop_cmd = Command::new("mysql");
+    #[cfg(windows)]
+    drop_cmd.creation_flags(0x08000000);
+
+    let _ = drop_cmd.args(&drop_args).output();
+
+    final_res
+}
+
 pub fn detect_xampp_data_path() -> Option<String> {
     let common_paths = [
         "C:\\xampp\\mysql\\data",

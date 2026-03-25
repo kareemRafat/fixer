@@ -89,6 +89,21 @@ pub async fn run_raw_backup(source_dir: String, dest_dir: String) -> Result<Stri
 }
 
 #[tauri::command]
+pub async fn verify_backup(
+    host: String,
+    port: u16,
+    user: String,
+    password: String,
+    file_path: String,
+) -> Result<database::VerificationResult, String> {
+    tokio::task::spawn_blocking(move || {
+        database::verify_backup(&host, port, &user, &password, &file_path)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
 pub fn detect_xampp_data_path() -> Option<String> {
     database::detect_xampp_data_path()
 }

@@ -2,7 +2,7 @@ import { useState, useEffect, Fragment } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { open } from "@tauri-apps/plugin-dialog";
-import { getBackups, deleteBackupRecord, BackupRecord } from "@/lib/db";
+import { getBackups, deleteBackupRecord, BackupRecord, updateBackupVerification } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -27,6 +27,10 @@ import {
   Archive,
   FolderOpen,
   FileUp,
+  ShieldCheck,
+  ShieldAlert,
+  ShieldQuestion,
+  SearchCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -80,6 +84,34 @@ const Backups = () => {
   const [externalFilePath, setExternalFilePath] = useState("");
   const [targetDbName, setTargetDbName] = useState("");
   const [isExternalRestoring, setIsExternalRestoring] = useState(false);
+  const [verifyingId, setVerifyingId] = useState<number | null>(null);
+
+  const handleVerify = async (backup: BackupRecord) => {
+    setVerifyingId(backup.id);
+    try {
+      const result: { success: boolean; message: string; tables_count: number } = await invoke("verify_backup", {
+        host,
+        port,
+        user,
+        password,
+        filePath: backup.file_path,
+      });
+
+      await updateBackupVerification(backup.id, result.success, result.message);
+      
+      if (result.success) {
+        toast.success(result.message);
+      } else {
+        toast.error(result.message);
+      }
+      fetchBackups();
+    } catch (error) {
+      toast.error(`Verification failed: ${error}`);
+      console.error(error);
+    } finally {
+      setVerifyingId(null);
+    }
+  };
 
   const fetchBackups = async () => {
     try {
@@ -368,6 +400,21 @@ const Backups = () => {
                         onClick={(e) => e.stopPropagation()}
                       >
                         <div className="flex justify-end gap-2">
+                          {backup.backup_type !== "raw" && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              title="Verify Integrity"
+                              onClick={() => handleVerify(backup)}
+                              disabled={backup.status !== "Success" || verifyingId === backup.id}
+                            >
+                              {verifyingId === backup.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                              ) : (
+                                <SearchCheck className="h-4 w-4 text-green-500" />
+                              )}
+                            </Button>
+                          )}
                           {!backup.file_path.toLowerCase().endsWith(".gz") &&
                             !backup.file_path
                               .toLowerCase()
@@ -454,6 +501,35 @@ const Backups = () => {
                                     </Badge>
                                   )}
                                 </div>
+                              </div>
+
+                              <div className="space-y-2">
+                                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                  Health & Integrity:
+                                </h4>
+                                <div className="flex items-center gap-2">
+                                  {backup.is_verified ? (
+                                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 flex items-center gap-1.5">
+                                      <ShieldCheck className="h-3.5 w-3.5" />
+                                      Verified Healthy
+                                    </Badge>
+                                  ) : backup.verification_message?.includes("failed") ? (
+                                    <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 flex items-center gap-1.5">
+                                      <ShieldAlert className="h-3.5 w-3.5" />
+                                      Verification Failed
+                                    </Badge>
+                                  ) : (
+                                    <Badge variant="outline" className="bg-slate-50 text-slate-600 border-slate-200 flex items-center gap-1.5">
+                                      <ShieldQuestion className="h-3.5 w-3.5" />
+                                      Not Verified
+                                    </Badge>
+                                  )}
+                                </div>
+                                {backup.verification_message && (
+                                  <p className="text-[11px] text-muted-foreground italic">
+                                    {backup.verification_message}
+                                  </p>
+                                )}
                               </div>
                             </div>
                           </div>

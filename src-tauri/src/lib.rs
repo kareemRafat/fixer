@@ -100,6 +100,7 @@ pub fn run() {
             commands::database::validate_backup_file,
             commands::database::compress_file,
             commands::database::run_raw_backup,
+            commands::database::verify_backup,
             commands::database::detect_xampp_data_path,
             commands::database::delete_file,
             commands::diagnostics::check_port_status,

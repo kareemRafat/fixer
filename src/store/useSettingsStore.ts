@@ -16,6 +16,7 @@ interface SettingsState {
   runOnStartup: boolean;
   minimizeToTray: boolean;
   startMinimized: boolean;
+  autoVerify: boolean;
   isInitialized: boolean;
   
   setBackupPath: (path: string) => void;
@@ -30,6 +31,7 @@ interface SettingsState {
   setRunOnStartup: (enabled: boolean) => Promise<void>;
   setMinimizeToTray: (enabled: boolean) => Promise<void>;
   setStartMinimized: (enabled: boolean) => Promise<void>;
+  setAutoVerify: (enabled: boolean) => void;
   initialize: () => Promise<void>;
   syncToDb: () => Promise<void>;
 }
@@ -49,6 +51,7 @@ export const useSettingsStore = create<SettingsState>()(
       runOnStartup: false,
       minimizeToTray: true,
       startMinimized: false,
+      autoVerify: false,
       isInitialized: false,
 
       setBackupPath: (path) => { set({ backupPath: path }); get().syncToDb(); },
@@ -65,6 +68,7 @@ export const useSettingsStore = create<SettingsState>()(
         document.documentElement.style.setProperty('--ring', color);
         document.documentElement.style.setProperty('--accent', color);
       },
+      setAutoVerify: (enabled) => { set({ autoVerify: enabled }); get().syncToDb(); },
       
       setRunOnStartup: async (enabled) => { 
         const { enable, disable } = await import("@tauri-apps/plugin-autostart");
@@ -130,6 +134,7 @@ export const useSettingsStore = create<SettingsState>()(
           const runOnStartup = dbSettings['run_on_startup'] === 'true';
           const minimizeToTray = dbSettings['minimize_to_tray'] === 'true';
           const startMinimized = dbSettings['start_minimized'] === 'true';
+          const autoVerify = dbSettings['auto_verify'] === 'true';
           const primaryColor = dbSettings['primary_color'] || get().primaryColor;
 
           // Sync backend state
@@ -150,6 +155,7 @@ export const useSettingsStore = create<SettingsState>()(
             runOnStartup: autostartEnabled, // Trust the actual plugin status
             minimizeToTray,
             startMinimized,
+            autoVerify,
             primaryColor,
             isInitialized: true
           });
@@ -177,6 +183,7 @@ export const useSettingsStore = create<SettingsState>()(
           await db.execute("UPDATE settings SET value = $1 WHERE key = 'run_on_startup'", [state.runOnStartup.toString()]);
           await db.execute("UPDATE settings SET value = $1 WHERE key = 'minimize_to_tray'", [state.minimizeToTray.toString()]);
           await db.execute("UPDATE settings SET value = $1 WHERE key = 'start_minimized'", [state.startMinimized.toString()]);
+          await db.execute("UPDATE settings SET value = $1 WHERE key = 'auto_verify'", [state.autoVerify.toString()]);
         } catch (e) {
           console.error("Failed to sync settings to DB:", e);
         }

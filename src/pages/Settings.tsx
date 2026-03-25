@@ -165,6 +165,23 @@ const Settings = () => {
                 </p>
               </div>
             </div>
+
+            <div className="flex items-center space-x-2 pt-2">
+              <Checkbox 
+                id="auto-verify" 
+                checked={settings.autoVerify} 
+                onCheckedChange={(checked) => settings.setAutoVerify(!!checked)} 
+              />
+              <div className="grid gap-1.5 leading-none">
+                <Label htmlFor="auto-verify" className="cursor-pointer flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4 text-primary" />
+                  Auto-Verify backups after completion
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  Automatically run a health check on every new backup.
+                </p>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
