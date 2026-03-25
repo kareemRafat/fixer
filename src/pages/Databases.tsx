@@ -284,23 +284,45 @@ const Databases = () => {
             None detected
           </span>
         ) : (
-          <div className="flex flex-wrap gap-2">
-            {services.map((s, i) => (
-              <button
-                key={i}
-                onClick={() => {
-                  setPort(s.port);
-                  toast.info(`Set port to ${s.port} for ${s.name}`);
-                }}
-                className="flex items-center gap-2 bg-background hover:bg-muted/50 px-5 py-1.5 rounded-md border text-sm shadow-sm transition-colors group"
-              >
-                <div className="h-2 w-2 rounded-full bg-green-500"></div>
-                <span className="font-medium">{s.name}</span>
-                <span className="text-muted-foreground font-semibold text-sm">
-                  : {s.port}
-                </span>
-              </button>
-            ))}
+          <div className="flex flex-wrap gap-3">
+            {services.map((s, i) => {
+              const displayName = s.name.includes(" (") ? s.name.split(" (")[0] : s.name;
+              if (s.service_type === "apache") {
+                const protocol = s.port === 443 ? "HTTPS" : s.port === 80 ? "HTTP" : "WEB";
+                return (
+                  <div
+                    key={i}
+                    className="flex items-center gap-3 bg-muted/10 px-4 py-2 rounded-lg border text-sm shadow-sm cursor-default"
+                  >
+                    <div className="h-2 w-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></div>
+                    <span className="font-semibold text-xs tracking-tight">
+                      {displayName} <span className="text-muted-foreground font-normal">: {s.port}</span>
+                    </span>
+                    <Badge variant="outline" className="text-[10px] font-black h-5 px-2 bg-blue-500/10 border-blue-500/20 text-blue-600 dark:text-blue-400">
+                      {protocol}
+                    </Badge>
+                  </div>
+                );
+              }
+              return (
+                <button
+                  key={i}
+                  onClick={() => {
+                    setPort(s.port);
+                    toast.info(`Set port to ${s.port} for ${s.name}`);
+                  }}
+                  className="flex items-center gap-3 bg-background hover:bg-muted/50 px-4 py-2 rounded-lg border text-sm shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] group"
+                >
+                  <div className="h-2 w-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]"></div>
+                  <span className="font-semibold text-xs tracking-tight">
+                    {displayName} <span className="text-muted-foreground font-normal">: {s.port}</span>
+                  </span>
+                  <Badge variant="outline" className="text-[10px] font-black h-5 px-2 bg-green-500/10 border-green-500/20 text-green-600 dark:text-green-400">
+                    SQL
+                  </Badge>
+                </button>
+              );
+            })}
           </div>
         )}
       </div>
