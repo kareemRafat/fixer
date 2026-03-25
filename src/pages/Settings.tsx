@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { open } from "@tauri-apps/plugin-dialog";
-import { FolderOpen, Save, Shield, Palette } from "lucide-react";
+import { FolderOpen, Save, Shield, Palette, Monitor, Minimize2, Power } from "lucide-react";
 import { toast } from "sonner";
 import { getDb } from "@/lib/db";
 
@@ -26,22 +26,7 @@ const Settings = () => {
   const settings = useSettingsStore();
 
   useEffect(() => {
-    // Initial sync from DB to store on load
-    const loadSettingsFromDb = async () => {
-      const db = await getDb();
-      const settingsFromDb = await db.select<any[]>("SELECT * FROM settings");
-      settingsFromDb.forEach(s => {
-        switch (s.key) {
-          case 'host': settings.setHost(s.value); break;
-          case 'port': settings.setPort(Number(s.value)); break;
-          case 'user': settings.setUser(s.value); break;
-          case 'password': settings.setPassword(s.value); break;
-          case 'backup_path': settings.setBackupPath(s.value); break;
-          case 'compress_backups': settings.setCompressBackups(s.value === 'true'); break;
-        }
-      });
-    };
-    loadSettingsFromDb();
+    settings.initialize();
   }, []);
 
   const pickBackupPath = async () => {
@@ -88,6 +73,66 @@ const Settings = () => {
       <Separator />
 
       <div className="grid gap-6">
+        {/* System & Background Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle>System & Background</CardTitle>
+            <CardDescription>Manage how the application runs on your system.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="run-on-startup" 
+                checked={settings.runOnStartup} 
+                onCheckedChange={(checked) => settings.setRunOnStartup(!!checked)} 
+              />
+              <div className="grid gap-1.5 leading-none">
+                <Label htmlFor="run-on-startup" className="cursor-pointer flex items-center gap-2">
+                  <Power className="h-4 w-4 text-primary" />
+                  Launch DBGuardX on system startup
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  Automatically start the application when you log in to Windows.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="minimize-to-tray" 
+                checked={settings.minimizeToTray} 
+                onCheckedChange={(checked) => settings.setMinimizeToTray(!!checked)} 
+              />
+              <div className="grid gap-1.5 leading-none">
+                <Label htmlFor="minimize-to-tray" className="cursor-pointer flex items-center gap-2">
+                  <Minimize2 className="h-4 w-4 text-primary" />
+                  Minimize to tray instead of closing
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  When you click the "X" button, the app will hide in the system tray.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="start-minimized" 
+                checked={settings.startMinimized} 
+                onCheckedChange={(checked) => settings.setStartMinimized(!!checked)} 
+              />
+              <div className="grid gap-1.5 leading-none">
+                <Label htmlFor="start-minimized" className="cursor-pointer flex items-center gap-2">
+                  <Monitor className="h-4 w-4 text-primary" />
+                  Start minimized in tray
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  Launch the application directly into the system tray on startup.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Backup Settings */}
         <Card>
           <CardHeader>

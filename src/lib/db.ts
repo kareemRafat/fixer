@@ -35,6 +35,17 @@ export const getDb = async () => {
       await db.execute("INSERT INTO settings (key, value) VALUES ('password', '')");
       await db.execute("INSERT INTO settings (key, value) VALUES ('backup_path', '')");
       await db.execute("INSERT INTO settings (key, value) VALUES ('compress_backups', 'false')");
+      await db.execute("INSERT INTO settings (key, value) VALUES ('run_on_startup', 'false')");
+      await db.execute("INSERT INTO settings (key, value) VALUES ('minimize_to_tray', 'true')");
+      await db.execute("INSERT INTO settings (key, value) VALUES ('start_minimized', 'false')");
+    }
+
+    // Migration for new settings
+    const runOnStartup = await db.select<any[]>("SELECT * FROM settings WHERE key = 'run_on_startup'");
+    if (runOnStartup.length === 0) {
+      await db.execute("INSERT INTO settings (key, value) VALUES ('run_on_startup', 'false')");
+      await db.execute("INSERT INTO settings (key, value) VALUES ('minimize_to_tray', 'true')");
+      await db.execute("INSERT INTO settings (key, value) VALUES ('start_minimized', 'false')");
     }
 
     await db.execute(`

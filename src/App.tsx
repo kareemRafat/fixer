@@ -15,6 +15,11 @@ import "./App.css";
 
 function App() {
   const primaryColor = useSettingsStore((state) => state.primaryColor);
+  const initialize = useSettingsStore((state) => state.initialize);
+
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
 
   useEffect(() => {
     document.documentElement.style.setProperty("--primary", primaryColor);
