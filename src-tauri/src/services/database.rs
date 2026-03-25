@@ -493,7 +493,7 @@ pub fn verify_backup(
     let restore_res = run_restore(host, port, user, password, &sandbox_name, file_path, "");
 
     // 3. Check results and cleanup
-    let mut final_res = match restore_res {
+    let final_res = match restore_res {
         Ok(_) => {
             // Count tables in sandbox
             let mut count_args = args.clone();

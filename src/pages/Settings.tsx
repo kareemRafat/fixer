@@ -8,9 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { open } from "@tauri-apps/plugin-dialog";
-import { FolderOpen, Save, Shield, Palette, Monitor, Minimize2, Power } from "lucide-react";
+import { FolderOpen, Save, Shield, Palette, Monitor, Minimize2, Power, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
-import { getDb } from "@/lib/db";
 
 const COLOR_PRESETS = [
   { name: "Teal", value: "188.7 94.5% 30%", bg: "bg-[#047481]" },

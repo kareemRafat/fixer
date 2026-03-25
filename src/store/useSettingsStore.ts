@@ -75,7 +75,7 @@ export const useSettingsStore = create<SettingsState>()(
         try {
           if (enabled) {
             if (get().startMinimized) {
-              await enable(["--minimized"]);
+              await enable();
             } else {
               await enable();
             }
@@ -105,7 +105,7 @@ export const useSettingsStore = create<SettingsState>()(
           const alreadyEnabled = await isEnabled();
           if (alreadyEnabled) {
             if (enabled) {
-              await enable(["--minimized"]);
+              await enable();
             } else {
               await enable();
             }
