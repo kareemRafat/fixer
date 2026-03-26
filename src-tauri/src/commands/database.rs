@@ -1,4 +1,4 @@
-use crate::services::database::{self, DatabaseInfo, DetectedService};
+use crate::services::database::{self, DatabaseInfo, DetectedService, TableInfo};
 
 #[tauri::command]
 pub fn detect_services() -> Vec<DetectedService> {
@@ -13,6 +13,17 @@ pub fn list_databases(
     password: &str,
 ) -> Result<Vec<DatabaseInfo>, String> {
     database::list_databases(host, port, user, password)
+}
+
+#[tauri::command]
+pub fn list_tables(
+    host: &str,
+    port: u16,
+    user: &str,
+    password: &str,
+    db_name: &str,
+) -> Result<Vec<TableInfo>, String> {
+    database::list_tables(host, port, user, password, db_name)
 }
 
 #[tauri::command]

@@ -20,6 +20,13 @@ pub struct DatabaseInfo {
     pub size_mb: f64,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct TableInfo {
+    pub name: String,
+    pub row_count: usize,
+    pub data_size_mb: f64,
+}
+
 pub fn detect_services() -> Vec<DetectedService> {
     let mut services = Vec::new();
     let mut detected_ports = std::collections::HashSet::new();
@@ -597,4 +604,61 @@ pub fn detect_xampp_data_path() -> Option<String> {
         }
     }
     None
+}
+
+pub fn list_tables(
+    host: &str,
+    port: u16,
+    user: &str,
+    password: &str,
+    db_name: &str,
+) -> Result<Vec<TableInfo>, String> {
+    let mut args = vec![
+        "-h".to_string(),
+        host.to_string(),
+        "-P".to_string(),
+        port.to_string(),
+        "-u".to_string(),
+        user.to_string(),
+    ];
+
+    if !password.is_empty() {
+        args.push(format!("-p{}", password));
+    }
+
+    args.push("-D".to_string());
+    args.push(db_name.to_string());
+    args.push("-e".to_string());
+    args.push("SELECT table_name, table_rows, data_length / 1024 / 1024 FROM information_schema.tables WHERE table_schema = DATABASE();".to_string());
+
+    let mut cmd = Command::new("mysql");
+    #[cfg(windows)]
+    cmd.creation_flags(0x08000000);
+
+    let output = cmd.args(&args).output();
+
+    match output {
+        Ok(output) => {
+            if output.status.success() {
+                let stdout = String::from_utf8_lossy(&output.stdout);
+                let mut tables = Vec::new();
+                for line in stdout.lines().skip(1) {
+                    if !line.trim().is_empty() {
+                        let parts: Vec<&str> = line.split('\t').collect();
+                        if parts.len() >= 3 {
+                            tables.push(TableInfo {
+                                name: parts[0].to_string(),
+                                row_count: parts[1].parse().unwrap_or(0),
+                                data_size_mb: parts[2].parse().unwrap_or(0.0),
+                            });
+                        }
+                    }
+                }
+                Ok(tables)
+            } else {
+                Err(String::from_utf8_lossy(&output.stderr).to_string())
+            }
+        }
+        Err(e) => Err(e.to_string()),
+    }
 }

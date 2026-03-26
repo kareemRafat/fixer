@@ -240,6 +240,27 @@ export const deleteSchedule = async (id: number) => {
   await database.execute("DELETE FROM schedules WHERE id = $1", [id]);
 };
 
+export const getActiveSchedulesCount = async (): Promise<number> => {
+  try {
+    const database = await getDb();
+    // Fetch all rows and filter in JS to be 100% sure we handle all data type quirks (1, "1", true, etc.)
+    const result = await database.select<any[]>("SELECT is_active FROM schedules");
+    if (!Array.isArray(result)) return 0;
+    
+    const active = result.filter(s => 
+      s.is_active === 1 || 
+      s.is_active === "1" || 
+      s.is_active === true || 
+      String(s.is_active).toLowerCase() === "true"
+    );
+    
+    return active.length;
+  } catch (e) {
+    console.error("Error getting active schedules count:", e);
+    return 0;
+  }
+};
+
 export const updateScheduleLastRun = async (id: number, lastRun: string) => {
   const database = await getDb();
   await database.execute("UPDATE schedules SET last_run = $1 WHERE id = $2", [lastRun, id]);

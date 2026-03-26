@@ -225,6 +225,7 @@ pub fn run() {
             commands::ping::ping,
             commands::database::detect_services,
             commands::database::list_databases,
+            commands::database::list_tables,
             commands::database::run_backup,
             commands::database::get_file_size,
             commands::database::run_restore,

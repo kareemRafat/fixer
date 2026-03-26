@@ -44,6 +44,12 @@ interface DatabaseInfo {
   size_mb: number;
 }
 
+interface TableInfo {
+  name: string;
+  row_count: number;
+  data_size_mb: number;
+}
+
 const Databases = () => {
   const {
     host,
@@ -68,6 +74,11 @@ const Databases = () => {
   const [error, setError] = useState<string | null>(null);
 
   const [selectedDbs, setSelectedDbs] = useState<string[]>([]);
+  const [selectedTables, setSelectedTables] = useState<TableInfo[]>([]);
+  const [isTablesModalOpen, setIsTablesModalOpen] = useState(false);
+  const [isLoadingTables, setIsLoadingTables] = useState(false);
+  const [currentDbName, setCurrentDbName] = useState("");
+
   const [dbsToBackup, setDbsToBackup] = useState<string[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isBackingUp, setIsBackingUp] = useState(false);
@@ -140,6 +151,27 @@ const Databases = () => {
       setSelectedDbs([]);
     } else {
       setSelectedDbs(databases.map((db) => db.name));
+    }
+  };
+
+  const handleTableDetails = async (dbName: string) => {
+    setCurrentDbName(dbName);
+    setIsLoadingTables(true);
+    setIsTablesModalOpen(true);
+    try {
+      const result: TableInfo[] = await invoke("list_tables", {
+        host,
+        port,
+        user,
+        password,
+        dbName,
+      });
+      setSelectedTables(result);
+    } catch (err) {
+      toast.error(`Failed to fetch tables: ${err}`);
+      setIsTablesModalOpen(false);
+    } finally {
+      setIsLoadingTables(false);
     }
   };
 
@@ -413,7 +445,7 @@ const Databases = () => {
         <Button
           onClick={fetchDatabases}
           disabled={loading || servicesLoading}
-          className="w-full h-9 font-semibold"
+          className="h-9 font-semibold"
         >
           {(loading || servicesLoading) ? (
             <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
@@ -491,7 +523,12 @@ const Databases = () => {
                         <Database className="h-5 w-5" />
                       </div>
                       <div className="flex flex-col gap-0.5">
-                        <span className="font-semibold text-sm tracking-tight">{db.name}</span>
+                        <button 
+                          onClick={() => handleTableDetails(db.name)}
+                          className="font-semibold text-sm tracking-tight text-left hover:text-primary hover:underline transition-colors"
+                        >
+                          {db.name}
+                        </button>
                         <div className="flex items-center gap-3">
                           <div className="flex items-center gap-1 text-[11px] text-muted-foreground font-medium uppercase tracking-wider">
                             <Table2 className="h-3 w-3" />
@@ -630,6 +667,100 @@ const Databases = () => {
               disabled={!backupPath || isBackingUp}
             >
               {isBackingUp ? "Processing..." : "Start Backup"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isTablesModalOpen} onOpenChange={setIsTablesModalOpen}>
+        <DialogContent className="sm:max-w-3xl max-h-[80vh] flex flex-col p-0 overflow-hidden">
+          <DialogHeader className="p-6 pb-2">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Database className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <DialogTitle className="text-xl">Database Explorer</DialogTitle>
+                <DialogDescription>
+                  Viewing tables in <span className="font-bold text-foreground">{currentDbName}</span>
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-y-auto p-6 pt-2">
+            {isLoadingTables ? (
+              <div className="flex flex-col items-center justify-center py-20 space-y-4">
+                <RefreshCw className="h-10 w-10 animate-spin text-primary/40" />
+                <p className="text-sm text-muted-foreground font-medium animate-pulse">Analyzing table structures...</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="grid grid-cols-3 gap-4 mb-6">
+                  <div className="bg-muted/30 p-4 rounded-xl border border-border/50">
+                    <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Total Tables</span>
+                    <div className="text-2xl font-bold mt-1">{selectedTables.length}</div>
+                  </div>
+                  <div className="bg-muted/30 p-4 rounded-xl border border-border/50">
+                    <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Total Rows</span>
+                    <div className="text-2xl font-bold mt-1">
+                      {selectedTables.reduce((acc, t) => acc + t.row_count, 0).toLocaleString()}
+                    </div>
+                  </div>
+                  <div className="bg-muted/30 p-4 rounded-xl border border-border/50">
+                    <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Total Size</span>
+                    <div className="text-2xl font-bold mt-1">
+                      {selectedTables.reduce((acc, t) => acc + t.data_size_mb, 0).toFixed(2)} <span className="text-sm font-normal text-muted-foreground">MB</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border rounded-xl overflow-hidden shadow-sm">
+                  <table className="w-full text-sm text-left">
+                    <thead className="bg-muted/50 text-muted-foreground border-b">
+                      <tr>
+                        <th className="px-4 py-3 font-semibold uppercase text-[10px]">Table Name</th>
+                        <th className="px-4 py-3 font-semibold uppercase text-[10px] text-right">Rows</th>
+                        <th className="px-4 py-3 font-semibold uppercase text-[10px] text-right">Data Size</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y bg-card">
+                      {selectedTables.length === 0 ? (
+                        <tr>
+                          <td colSpan={3} className="px-4 py-12 text-center text-muted-foreground italic">
+                            No tables found in this database.
+                          </td>
+                        </tr>
+                      ) : (
+                        selectedTables.map((table, idx) => (
+                          <tr key={idx} className="hover:bg-muted/30 transition-colors group">
+                            <td className="px-4 py-3 flex items-center gap-3">
+                              <Table2 className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                              <span className="font-medium">{table.name}</span>
+                            </td>
+                            <td className="px-4 py-3 text-right tabular-nums text-muted-foreground group-hover:text-foreground transition-colors font-semibold">
+                              {table.row_count.toLocaleString()}
+                            </td>
+                            <td className="px-4 py-3 text-right tabular-nums text-muted-foreground font-medium">
+                              {table.data_size_mb.toFixed(2)} MB
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter className="p-4 bg-muted/30 border-t flex items-center justify-end">
+            <Button 
+              variant="secondary"
+              className="px-6 mx-4 mb-4"
+              onClick={() => setIsTablesModalOpen(false)}
+            >
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>
