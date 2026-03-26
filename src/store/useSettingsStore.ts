@@ -60,7 +60,7 @@ export const useSettingsStore = create<SettingsState>()(
       setBackupPath: (path) => { set({ backupPath: path }); get().syncToDb(); },
       setAutoDetectServices: (enabled) => set({ autoDetectServices: enabled }),
       setCompressBackups: (enabled) => { set({ compressBackups: enabled }); get().syncToDb(); },
-      setMysqlDataPath: (path) => set({ mysqlDataPath: path }),
+      setMysqlDataPath: (path) => { set({ mysqlDataPath: path }); get().syncToDb(); },
       setHost: (host) => { set({ host }); get().syncToDb(); },
       setPort: (port) => { set({ port: Number(port) }); get().syncToDb(); },
       setUser: (user) => { set({ user }); get().syncToDb(); },
@@ -162,6 +162,7 @@ export const useSettingsStore = create<SettingsState>()(
             user: dbSettings['user'] || get().user,
             password: dbSettings['password'] || get().password,
             backupPath: dbSettings['backup_path'] || get().backupPath,
+            mysqlDataPath: dbSettings['mysql_data_path'] || get().mysqlDataPath,
             compressBackups: dbSettings['compress_backups'] === 'true',
             runOnStartup: autostartEnabled, // Trust the actual plugin status
             minimizeToTray,
@@ -191,6 +192,7 @@ export const useSettingsStore = create<SettingsState>()(
           await db.execute("UPDATE settings SET value = $1 WHERE key = 'user'", [state.user]);
           await db.execute("UPDATE settings SET value = $1 WHERE key = 'password'", [state.password]);
           await db.execute("UPDATE settings SET value = $1 WHERE key = 'backup_path'", [state.backupPath]);
+          await db.execute("UPDATE settings SET value = $1 WHERE key = 'mysql_data_path'", [state.mysqlDataPath]);
           await db.execute("UPDATE settings SET value = $1 WHERE key = 'compress_backups'", [state.compressBackups.toString()]);
           await db.execute("UPDATE settings SET value = $1 WHERE key = 'run_on_startup'", [state.runOnStartup.toString()]);
           await db.execute("UPDATE settings SET value = $1 WHERE key = 'minimize_to_tray'", [state.minimizeToTray.toString()]);

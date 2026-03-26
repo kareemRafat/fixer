@@ -52,10 +52,6 @@ const Settings = () => {
     }
   };
 
-  const handleSave = () => {
-    toast.success("Settings saved locally.");
-  };
-
   return (
     <div className="p-8 max-w-4xl mx-auto space-y-8">
       <div className="flex items-center justify-between">
@@ -63,10 +59,6 @@ const Settings = () => {
           <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
           <p className="text-muted-foreground">Manage your backup preferences and connection details.</p>
         </div>
-        <Button onClick={handleSave} className="rounded-md">
-          <Save className="mr-2 h-4 w-4" />
-          Save Settings
-        </Button>
       </div>
 
       <Separator />

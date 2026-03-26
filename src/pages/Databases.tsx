@@ -96,12 +96,15 @@ const Databases = () => {
     setLoading(true);
     setError(null);
     try {
-      const result: DatabaseInfo[] = await invoke("list_databases", {
-        host,
-        port,
-        user,
-        password,
-      });
+      const [result] = await Promise.all([
+        invoke("list_databases", {
+          host,
+          port,
+          user,
+          password,
+        }),
+        new Promise((resolve) => setTimeout(resolve, 500)),
+      ]);
 
       const systemDbs = [
         "information_schema",
@@ -110,7 +113,7 @@ const Databases = () => {
         "sys",
         "phpmyadmin",
       ];
-      const userDbs = result.filter(
+      const userDbs = (result as DatabaseInfo[]).filter(
         (db) => !systemDbs.includes(db.name.toLowerCase()),
       );
 
@@ -294,12 +297,13 @@ const Databases = () => {
         <h1 className="text-2xl font-semibold tracking-tight">Databases</h1>
         <Button
           onClick={detectServices}
+          disabled={servicesLoading}
           variant="outline"
           size="sm"
           className="rounded-md"
         >
-          <RefreshCw className="mr-2 h-4 w-4" />
-          Refresh
+          <RefreshCw className={`mr-2 h-4 w-4 ${servicesLoading ? "animate-spin" : ""}`} />
+          {servicesLoading ? "Scanning..." : "Refresh Services"}
         </Button>
       </div>
 
@@ -408,15 +412,15 @@ const Databases = () => {
         </div>
         <Button
           onClick={fetchDatabases}
-          disabled={loading}
+          disabled={loading || servicesLoading}
           className="w-full h-9 font-semibold"
         >
-          {loading ? (
+          {(loading || servicesLoading) ? (
             <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
           ) : (
             <Database className="mr-2 h-4 w-4" />
           )}
-          Check Databases
+          {servicesLoading ? "Detecting Environment..." : loading ? "Connecting..." : "Check Databases"}
         </Button>
       </div>
 
@@ -428,7 +432,20 @@ const Databases = () => {
         </Alert>
       )}
 
-      {databases.length > 0 && (
+      {/* Database List Loading State */}
+      {loading && (
+        <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-xl bg-muted/20 animate-in fade-in zoom-in duration-300">
+          <div className="relative">
+            <Database className="h-12 w-12 text-primary/20" />
+            <RefreshCw className="h-6 w-6 animate-spin text-primary absolute -bottom-1 -right-1" />
+          </div>
+          <span className="mt-4 text-sm font-semibold text-muted-foreground animate-pulse">
+            Establishing connection and fetching databases...
+          </span>
+        </div>
+      )}
+
+      {databases.length > 0 && !loading && (
         <div className="space-y-4">
           <div className="flex items-center justify-between border-b pb-2">
             <h2 className="text-lg font-medium">

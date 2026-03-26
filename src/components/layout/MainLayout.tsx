@@ -45,19 +45,32 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
           <SidebarItem to="/schedules" icon={<ClipboardClock className="h-5 w-5" />} label="Schedules" />
           <SidebarItem to="/settings" icon={<Settings className="h-5 w-5" />} label="Settings" />
         </nav>
-        <div className="p-4 border-t mt-auto shrink-0">
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between gap-3 px-3 py-1 text-xs text-muted-foreground uppercase font-bold tracking-widest">
-                <div className="flex items-center gap-2">
-                    <span className="relative flex h-2 w-2">
+        <div className="px-4 py-4 border-t mt-auto shrink-0 bg-muted/5">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-3 px-3 py-3 rounded-xl bg-secondary/40 border border-border/40 transition-all hover:bg-secondary/60">
+                <div className="relative flex items-center justify-center">
+                    <div className="p-1.5 bg-background rounded-lg border border-border shadow-sm">
+                        <ClipboardClock className="h-4 w-4 text-primary" />
+                    </div>
+                    <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
                     </span>
-                    Scheduler Active
+                </div>
+                <div className="flex flex-col">
+                    <span className="text-sm font-bold text-foreground/90 leading-none mb-1">Scheduler Active</span>
+                    <span className="text-xs text-muted-foreground font-medium leading-none">Monitoring your tasks</span>
                 </div>
             </div>
-            <div className="flex items-center justify-between gap-3 px-3 py-1">
-                <span className="text-xs text-muted-foreground">System Engine</span>
+            
+            <div className="flex items-center justify-between px-1">
+                <div className="flex flex-col">
+                    <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest leading-none mb-1">System Engine</span>
+                    <div className="flex items-center gap-1.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary/40" />
+                        <span className="text-[10px] text-primary/70 font-mono leading-none">v1.2.0-stable</span>
+                    </div>
+                </div>
                 <ThemeToggle />
             </div>
           </div>

@@ -43,9 +43,15 @@ export const getDb = async () => {
       await db.execute("INSERT INTO settings (key, value) VALUES ('start_minimized', 'false')");
       await db.execute("INSERT INTO settings (key, value) VALUES ('auto_verify', 'false')");
       await db.execute("INSERT INTO settings (key, value) VALUES ('window_size_mode', 'suitable')");
+      await db.execute("INSERT INTO settings (key, value) VALUES ('mysql_data_path', 'C:\\\\ProgramData\\\\MySQL\\\\MySQL Server 8.0\\\\Data')");
     }
 
     // Migration for new settings
+    const mysqlDataPath = await db.select<any[]>("SELECT * FROM settings WHERE key = 'mysql_data_path'");
+    if (mysqlDataPath.length === 0) {
+      await db.execute("INSERT INTO settings (key, value) VALUES ('mysql_data_path', 'C:\\\\ProgramData\\\\MySQL\\\\MySQL Server 8.0\\\\Data')");
+    }
+
     const runOnStartup = await db.select<any[]>("SELECT * FROM settings WHERE key = 'run_on_startup'");
     if (runOnStartup.length === 0) {
       await db.execute("INSERT INTO settings (key, value) VALUES ('run_on_startup', 'false')");
