@@ -59,8 +59,6 @@ const Diagnostics = () => {
 
   // Custom Port Checker State
   const [customPort, setCustomPort] = useState<string>("");
-  const [customResult, setCustomResult] = useState<PortStatus | null>(null);
-  const [isCheckingCustom, setIsCheckingCustom] = useState(false);
   const [terminalStep, setTerminalStep] = useState(0);
 
   // Quick Scan Dialog State
@@ -74,7 +72,7 @@ const Diagnostics = () => {
   const [processToKill, setProcessToKill] = useState<{pid: number, name: string} | null>(null);
 
   useEffect(() => {
-    if (customResult || scanResult) {
+    if (scanResult) {
       setTerminalStep(0);
       const sequence = [100, 400, 800, 1200, 1600];
       const timers = sequence.map((delay, index) => 
@@ -82,7 +80,7 @@ const Diagnostics = () => {
       );
       return () => timers.forEach(clearTimeout);
     }
-  }, [customResult, scanResult]);
+  }, [scanResult]);
 
   const handleIdentify = async (port: number, serviceType?: string) => {
     setScanPort(port);

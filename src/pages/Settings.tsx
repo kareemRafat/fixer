@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { open } from "@tauri-apps/plugin-dialog";
-import { FolderOpen, Save, Shield, Palette, Monitor, Minimize2, Power, ShieldCheck } from "lucide-react";
+import { FolderOpen, Shield, Palette, Monitor, Minimize2, Power, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 const COLOR_PRESETS = [
