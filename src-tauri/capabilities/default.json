@@ -3,7 +3,8 @@
   "identifier": "default",
   "description": "Capability for the main window",
   "windows": [
-    "main"
+    "main",
+    "splash"
   ],
   "permissions": [
     "core:default",
@@ -11,6 +12,7 @@
     "dialog:default",
     "dialog:allow-open",
     "sql:default",
+    "sql:allow-load",
     "sql:allow-execute",
     "sql:allow-select",
     "notification:default",

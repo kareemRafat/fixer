@@ -83,7 +83,12 @@ const Settings = () => {
               <Checkbox 
                 id="run-on-startup" 
                 checked={settings.runOnStartup} 
-                onCheckedChange={(checked) => settings.setRunOnStartup(!!checked)} 
+                onCheckedChange={(checked) => {
+                  settings.setRunOnStartup(!!checked);
+                  if (!checked) {
+                    settings.setStartMinimized(false);
+                  }
+                }} 
               />
               <div className="grid gap-1.5 leading-none">
                 <Label htmlFor="run-on-startup" className="cursor-pointer flex items-center gap-2">
@@ -113,10 +118,11 @@ const Settings = () => {
               </div>
             </div>
 
-            <div className="flex items-center space-x-2">
+            <div className={`flex items-center space-x-2 transition-opacity ${!settings.runOnStartup ? "opacity-50 pointer-events-none" : ""}`}>
               <Checkbox 
                 id="start-minimized" 
                 checked={settings.startMinimized} 
+                disabled={!settings.runOnStartup}
                 onCheckedChange={(checked) => settings.setStartMinimized(!!checked)} 
               />
               <div className="grid gap-1.5 leading-none">

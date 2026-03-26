@@ -12,11 +12,12 @@ pub async fn close_splashscreen<R: Runtime>(
         splashscreen.close().map_err(|e| e.to_string())?;
     }
     
-    // Show main window only if not starting minimized
-    if !settings.start_minimized.load(Ordering::Relaxed) {
+    // Show main window only if not starting minimized via flag
+    if !settings.was_started_minimized.load(Ordering::Relaxed) {
         if let Some(main_window) = app.get_webview_window("main") {
             main_window.show().map_err(|e| e.to_string())?;
             main_window.set_focus().map_err(|e| e.to_string())?;
+            main_window.unminimize().map_err(|e| e.to_string())?;
         }
     }
     Ok(())
@@ -27,10 +28,11 @@ pub async fn show_splashscreen<R: Runtime>(
     app: tauri::AppHandle<R>,
     settings: State<'_, AppSettings>,
 ) -> Result<(), String> {
-    // Show splashscreen only if not starting minimized
-    if !settings.start_minimized.load(Ordering::Relaxed) {
+    // Show splashscreen only if not starting minimized via flag
+    if !settings.was_started_minimized.load(Ordering::Relaxed) {
         if let Some(splash) = app.get_webview_window("splash") {
             splash.show().map_err(|e| e.to_string())?;
+            splash.set_focus().map_err(|e| e.to_string())?;
         }
     }
     Ok(())

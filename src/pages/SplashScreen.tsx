@@ -1,40 +1,66 @@
 import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { Database, Server, Lock } from "lucide-react";
+import { useSettingsStore } from "@/store/useSettingsStore";
 
 const SplashScreen = () => {
   const [status, setStatus] = useState("Initializing DBGuardX...");
   const [progress, setProgress] = useState(0);
+  const isInitialized = useSettingsStore((state) => state.isInitialized);
+  const startMinimized = useSettingsStore((state) => state.startMinimized);
 
   useEffect(() => {
-    // Show window as soon as component mounts
-    invoke("show_splashscreen").catch(console.error);
-
-    const steps = [
-      { message: "Connecting to database services...", progress: 20 },
-      { message: "Verifying security protocols...", progress: 45 },
-      { message: "Loading backup configurations...", progress: 70 },
-      { message: "Optimizing dashboard...", progress: 90 },
-      { message: "Ready", progress: 100 },
-    ];
-
-    let currentStep = 0;
-    const interval = setInterval(() => {
-      if (currentStep < steps.length) {
-        setStatus(steps[currentStep].message);
-        setProgress(steps[currentStep].progress);
-        currentStep++;
-      } else {
-        clearInterval(interval);
-        // Small delay before closing splash
-        setTimeout(() => {
-          invoke("close_splashscreen").catch(console.error);
-        }, 500);
+    // Show window immediately if not started with --minimized flag
+    const earlyCheck = async () => {
+      const wasStartedMinimized = await invoke("was_started_minimized");
+      if (!wasStartedMinimized) {
+        invoke("show_splashscreen").catch(console.error);
       }
-    }, 800);
-
-    return () => clearInterval(interval);
+    };
+    earlyCheck();
   }, []);
+
+  useEffect(() => {
+    if (!isInitialized) return;
+
+    const runSequence = async () => {
+      const wasStartedMinimized = await invoke("was_started_minimized");
+      
+      if (wasStartedMinimized && startMinimized) {
+        invoke("close_splashscreen").catch(console.error);
+        return;
+      }
+
+      // No need to call show_splashscreen here, handled by mount effect
+
+      const steps = [
+        { message: "Connecting to database services...", progress: 20 },
+        { message: "Verifying security protocols...", progress: 45 },
+        { message: "Loading backup configurations...", progress: 70 },
+        { message: "Optimizing dashboard...", progress: 90 },
+        { message: "Ready", progress: 100 },
+      ];
+
+      let currentStep = 0;
+      const interval = setInterval(() => {
+        if (currentStep < steps.length) {
+          setStatus(steps[currentStep].message);
+          setProgress(steps[currentStep].progress);
+          currentStep++;
+        } else {
+          clearInterval(interval);
+          // Small delay before closing splash
+          setTimeout(() => {
+            invoke("close_splashscreen").catch(console.error);
+          }, 500);
+        }
+      }, 800);
+
+      return () => clearInterval(interval);
+    };
+
+    runSequence();
+  }, [isInitialized, startMinimized]);
 
   return (
     <div className="h-screen w-screen flex flex-col items-center justify-center bg-[#f8fafc] text-[#020817] overflow-hidden select-none border border-slate-200/50 rounded-lg shadow-2xl p-8">

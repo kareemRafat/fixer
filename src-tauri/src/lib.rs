@@ -11,6 +11,7 @@ use tauri::{
 struct AppSettings {
     minimize_to_tray: AtomicBool,
     start_minimized: AtomicBool,
+    was_started_minimized: AtomicBool,
 }
 
 #[tauri::command]
@@ -18,22 +19,40 @@ fn update_minimize_to_tray(state: State<'_, AppSettings>, enabled: bool) {
     state.minimize_to_tray.store(enabled, Ordering::Relaxed);
 }
 
+#[tauri::command]
+fn update_start_minimized(state: State<'_, AppSettings>, enabled: bool) {
+    state.start_minimized.store(enabled, Ordering::Relaxed);
+}
+
+#[tauri::command]
+fn was_started_minimized(state: State<'_, AppSettings>) -> bool {
+    state.was_started_minimized.load(Ordering::Relaxed)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let start_minimized = std::env::args().any(|arg| arg == "--minimized");
+    let started_with_flag = std::env::args().any(|arg| arg == "--minimized");
 
     tauri::Builder::default()
         .manage(AppSettings {
             minimize_to_tray: AtomicBool::new(true),
-            start_minimized: AtomicBool::new(start_minimized),
+            start_minimized: AtomicBool::new(false),
+            was_started_minimized: AtomicBool::new(started_with_flag),
         })
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_sql::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.show();
+                let _ = window.set_focus();
+                let _ = window.unminimize();
+            }
+        }))
         .plugin(tauri_plugin_autostart::init(
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
-            None,
+            Some(vec!["--minimized"]),
         ))
         .setup(|app| {
             // Create Menu Items
@@ -47,7 +66,9 @@ pub fn run() {
             // Build the Tray Icon
             let _tray = TrayIconBuilder::new()
                 .icon(app.default_window_icon().unwrap().clone())
+                .tooltip("DBGuardX")
                 .menu(&menu)
+                .show_menu_on_left_click(false)
                 .on_menu_event(|app, event| match event.id.as_ref() {
                     "quit" => {
                         app.exit(0);
@@ -56,21 +77,25 @@ pub fn run() {
                         if let Some(window) = app.get_webview_window("main") {
                             let _ = window.show();
                             let _ = window.set_focus();
+                            let _ = window.unminimize();
                         }
                     }
                     _ => {}
                 })
                 .on_tray_icon_event(|tray, event| {
-                    if let TrayIconEvent::Click {
-                        button: tauri::tray::MouseButton::Left,
-                        ..
-                    } = event
-                    {
-                        let app = tray.app_handle();
-                        if let Some(window) = app.get_webview_window("main") {
-                            let _ = window.show();
-                            let _ = window.set_focus();
+                    match event {
+                        TrayIconEvent::Click {
+                            button: tauri::tray::MouseButton::Left,
+                            ..
+                        } => {
+                            let app = tray.app_handle();
+                            if let Some(window) = app.get_webview_window("main") {
+                                let _ = window.show();
+                                let _ = window.set_focus();
+                                let _ = window.unminimize();
+                            }
                         }
+                        _ => {}
                     }
                 })
                 .build(app)?;
@@ -92,7 +117,10 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             update_minimize_to_tray,
-            commands::ping::ping,            commands::database::detect_services,
+            update_start_minimized,
+            was_started_minimized,
+            commands::ping::ping,
+            commands::database::detect_services,
             commands::database::list_databases,
             commands::database::run_backup,
             commands::database::get_file_size,

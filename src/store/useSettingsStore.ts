@@ -110,6 +110,7 @@ export const useSettingsStore = create<SettingsState>()(
               await enable();
             }
           }
+          await invoke("update_start_minimized", { enabled });
           set({ startMinimized: enabled }); 
           await get().syncToDb(); 
         } catch (e) {
@@ -139,6 +140,7 @@ export const useSettingsStore = create<SettingsState>()(
 
           // Sync backend state
           await invoke("update_minimize_to_tray", { enabled: minimizeToTray });
+          await invoke("update_start_minimized", { enabled: startMinimized });
 
           // Sync CSS
           document.documentElement.style.setProperty('--primary', primaryColor);
