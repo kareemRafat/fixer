@@ -93,29 +93,65 @@ pub fn kill_process(pid: u32) -> Result<(), String> {
 }
 
 pub fn find_config_file(service_type: &str) -> Option<String> {
-    let common_bases = [
-        "C:\\xampp",
-        "D:\\xampp",
-        "C:\\laragon\\bin",
-        "C:\\wamp64\\bin",
-    ];
+    let drives = ["C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
+    
+    for drive in drives {
+        let common_bases = [
+            format!("{}:\\xampp", drive),
+            format!("{}:\\laragon\\bin", drive),
+            format!("{}:\\wamp64\\bin", drive),
+            format!("{}:\\wamp\\bin", drive),
+        ];
 
-    for base in common_bases {
-        if service_type == "mysql" {
-            let paths = [
-                format!("{}\\mysql\\bin\\my.ini", base),
-                format!("{}\\mysql\\my.ini", base),
-            ];
-            for p in paths {
-                if std::path::Path::new(&p).exists() {
-                    return Some(p);
-                }
+        for base in common_bases {
+            if !std::path::Path::new(&base).exists() {
+                continue;
             }
-        } else if service_type == "apache" {
-            let paths = [format!("{}\\apache\\conf\\httpd.conf", base)];
-            for p in paths {
-                if std::path::Path::new(&p).exists() {
-                    return Some(p);
+
+            if service_type == "mysql" {
+                // XAMPP style
+                let xampp_paths = [
+                    format!("{}\\mysql\\bin\\my.ini", base),
+                    format!("{}\\mysql\\my.ini", base),
+                ];
+                for p in xampp_paths {
+                    if std::path::Path::new(&p).exists() {
+                        return Some(p);
+                    }
+                }
+
+                // Laragon/WAMP style (versioned)
+                if base.contains("laragon") || base.contains("wamp") {
+                    let mysql_base = format!("{}\\mysql", base);
+                    let mariadb_base = format!("{}\\mariadb", base);
+                    
+                    for m_base in [mysql_base, mariadb_base] {
+                        if let Ok(entries) = std::fs::read_dir(m_base) {
+                            for entry in entries.flatten() {
+                                let p1 = entry.path().join("my.ini");
+                                let p2 = entry.path().join("bin").join("my.ini");
+                                if p1.exists() { return Some(p1.to_string_lossy().to_string()); }
+                                if p2.exists() { return Some(p2.to_string_lossy().to_string()); }
+                            }
+                        }
+                    }
+                }
+            } else if service_type == "apache" {
+                // XAMPP style
+                let xampp_path = format!("{}\\apache\\conf\\httpd.conf", base);
+                if std::path::Path::new(&xampp_path).exists() {
+                    return Some(xampp_path);
+                }
+
+                // Laragon/WAMP style (versioned)
+                if base.contains("laragon") || base.contains("wamp") {
+                    let apache_base = format!("{}\\apache", base);
+                    if let Ok(entries) = std::fs::read_dir(apache_base) {
+                        for entry in entries.flatten() {
+                            let p = entry.path().join("conf").join("httpd.conf");
+                            if p.exists() { return Some(p.to_string_lossy().to_string()); }
+                        }
+                    }
                 }
             }
         }

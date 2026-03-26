@@ -548,30 +548,49 @@ pub fn verify_backup(
 }
 
 pub fn detect_xampp_data_path() -> Option<String> {
-    let common_paths = [
-        "C:\\xampp\\mysql\\data",
-        "D:\\xampp\\mysql\\data",
-        "C:\\laragon\\bin\\mysql",   // Laragon base
-        "C:\\laragon\\bin\\mariadb", // Laragon MariaDB base
-        "C:\\wamp64\\bin\\mysql",    // WAMP base
-        "C:\\wamp\\bin\\mysql",      // WAMP 32-bit base
+    let drives = ["C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
+    let base_patterns = [
+        "xampp\\mysql\\data",
+        "laragon\\bin\\mysql",
+        "laragon\\bin\\mariadb",
+        "wamp64\\bin\\mysql",
+        "wamp\\bin\\mysql",
+        "mysql\\data",
+        "ProgramData\\MySQL",
     ];
 
-    for path in common_paths {
-        let p = std::path::Path::new(path);
-        if p.exists() {
-            // If it's a direct data folder (XAMPP style)
-            if path.ends_with("data") {
-                return Some(path.to_string());
-            }
+    for drive in drives {
+        for pattern in base_patterns {
+            let path = format!("{}:\\{}", drive, pattern);
+            let p = std::path::Path::new(&path);
+            
+            if p.exists() {
+                // If it's a direct data folder (XAMPP style)
+                if path.ends_with("data") {
+                    return Some(path);
+                }
 
-            // For Laragon/WAMP, we need to look one level deeper for the data folder
-            // e.g., C:\laragon\bin\mysql\mysql-8.0.30\data
-            if let Ok(entries) = std::fs::read_dir(p) {
-                for entry in entries.flatten() {
-                    let sub_path = entry.path().join("data");
-                    if sub_path.exists() {
-                        return Some(sub_path.to_string_lossy().to_string());
+                // For MySQL Installer (ProgramData)
+                if pattern == "ProgramData\\MySQL" {
+                    if let Ok(entries) = std::fs::read_dir(p) {
+                        for entry in entries.flatten() {
+                            let sub_path = entry.path().join("Data");
+                            if sub_path.exists() {
+                                return Some(sub_path.to_string_lossy().to_string());
+                            }
+                        }
+                    }
+                    continue;
+                }
+
+                // For Laragon/WAMP, we need to look one level deeper for the data folder
+                // e.g., C:\laragon\bin\mysql\mysql-8.0.30\data
+                if let Ok(entries) = std::fs::read_dir(p) {
+                    for entry in entries.flatten() {
+                        let sub_path = entry.path().join("data");
+                        if sub_path.exists() {
+                            return Some(sub_path.to_string_lossy().to_string());
+                        }
                     }
                 }
             }

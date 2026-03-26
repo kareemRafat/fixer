@@ -126,16 +126,7 @@ const Diagnostics = () => {
       toast.error("Please enter a valid port number (1-65535)");
       return;
     }
-
-    setIsCheckingCustom(true);
-    try {
-      const result: PortStatus = await invoke("check_port_status", { port: portNum });
-      setCustomResult(result);
-    } catch (error) {
-      toast.error(`Error checking port ${portNum}`);
-    } finally {
-      setIsCheckingCustom(false);
-    }
+    handleIdentify(portNum);
   };
 
   const checkPorts = async () => {
@@ -339,7 +330,6 @@ const Diagnostics = () => {
         </CardContent>
       </Card>
 
-      {/* New Custom Port Checker Section */}
       <Card>
         <CardHeader className="bg-muted pb-4">
           <CardTitle className="text-lg flex items-center gap-2">
@@ -348,7 +338,7 @@ const Diagnostics = () => {
           </CardTitle>
           <CardDescription className="text-base">Check if any other application is using a specific port.</CardDescription>
         </CardHeader>
-        <CardContent className="pt-6 space-y-4">
+        <CardContent className="pt-6">
           <div className="flex gap-2">
             <Input 
               type="number" 
@@ -357,22 +347,11 @@ const Diagnostics = () => {
               className="text-base"
               onChange={(e) => setCustomPort(e.target.value)}
             />
-            <Button onClick={handleCheckCustomPort} disabled={isCheckingCustom} className="rounded-md">
-              <Search className={`mr-2 h-4 w-4 ${isCheckingCustom ? "animate-spin" : ""}`} />
+            <Button onClick={handleCheckCustomPort} className="rounded-md">
+              <Search className="mr-2 h-4 w-4" />
               Check Port
             </Button>
           </div>
-
-          {customResult && (
-            <div className="mt-4">
-              <TerminalOutput
-                port={customResult.port}
-                result={customResult}
-                terminalStep={terminalStep}
-                onKill={(pid) => confirmKillProcess(pid, customResult.process_name || "Unknown")}
-              />
-            </div>
-          )}
         </CardContent>
       </Card>
 
