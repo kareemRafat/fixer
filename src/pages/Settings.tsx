@@ -227,6 +227,41 @@ const Settings = () => {
                 ))}
               </div>
             </div>
+
+            <Separator className="my-4" />
+
+            <div className="space-y-3">
+              <Label className="text-muted-foreground uppercase flex items-center gap-2">
+                <Monitor className="h-4 w-4" />
+                Startup Window Size
+              </Label>
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { id: 'suitable', label: 'Suitable', desc: 'Smart size for your screen' },
+                  { id: 'fixed', label: 'Fixed', desc: 'Classic 1024x768 size' },
+                  { id: 'maximized', label: 'Maximized', desc: 'Fill the entire screen' },
+                ].map((mode) => (
+                  <button
+                    key={mode.id}
+                    onClick={() => settings.setWindowSizeMode(mode.id as any)}
+                    className={`flex flex-col items-start gap-1 p-3 rounded-lg border-2 text-left transition-all ${
+                      settings.windowSizeMode === mode.id 
+                        ? "border-primary bg-primary/5 shadow-sm" 
+                        : "border-transparent bg-muted/50 hover:border-muted-foreground/20"
+                    }`}
+                  >
+                    <span className={`text-sm font-bold ${
+                      settings.windowSizeMode === mode.id ? "text-primary" : "text-foreground"
+                    }`}>
+                      {mode.label}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground leading-tight">
+                      {mode.desc}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
           </CardContent>
         </Card>
 

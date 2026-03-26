@@ -2,6 +2,7 @@ mod commands;
 mod services;
 
 use std::sync::atomic::{AtomicBool, Ordering};
+use sqlx::{Row, sqlite::SqlitePool};
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{TrayIconBuilder, TrayIconEvent},
@@ -27,6 +28,50 @@ fn update_start_minimized(state: State<'_, AppSettings>, enabled: bool) {
 #[tauri::command]
 fn was_started_minimized(state: State<'_, AppSettings>) -> bool {
     state.was_started_minimized.load(Ordering::Relaxed)
+}
+
+#[tauri::command]
+async fn apply_window_size(app_handle: tauri::AppHandle, mode: String) {
+    if let Some(main_window) = app_handle.get_webview_window("main") {
+        match mode.as_str() {
+            "maximized" => {
+                let _ = main_window.maximize();
+            }
+            "fixed" => {
+                let _ = main_window.unmaximize();
+                let _ = main_window.set_size(tauri::Size::Logical(tauri::LogicalSize {
+                    width: 1024.0,
+                    height: 768.0,
+                }));
+                let _ = main_window.center();
+            }
+            _ => { // "suitable" or default
+                let _ = main_window.unmaximize();
+                if let Ok(Some(monitor)) = main_window.primary_monitor() {
+                    let size = monitor.size();
+                    let scale_factor = monitor.scale_factor();
+                    
+                    let logical_width = size.width as f64 / scale_factor;
+                    let logical_height = size.height as f64 / scale_factor;
+                    
+                    let mut target_width = logical_width * 0.85;
+                    let mut target_height = logical_height * 0.85;
+                    
+                    if target_width > 1280.0 { target_width = 1280.0; }
+                    if target_width < 1024.0 { target_width = 1024.0; }
+                    
+                    if target_height > 850.0 { target_height = 850.0; }
+                    if target_height < 720.0 { target_height = 720.0; }
+
+                    let _ = main_window.set_size(tauri::Size::Logical(tauri::LogicalSize {
+                        width: target_width,
+                        height: target_height,
+                    }));
+                    let _ = main_window.center();
+                }
+            }
+        }
+    }
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -55,6 +100,64 @@ pub fn run() {
             Some(vec!["--minimized"]),
         ))
         .setup(|app| {
+            // Dynamically set window size based on monitor and user settings
+            let app_handle = app.handle().clone();
+            tauri::async_runtime::block_on(async move {
+                if let Some(main_window) = app_handle.get_webview_window("main") {
+                    // Try to get user preference from DB
+                    let mut mode = String::from("suitable");
+                    let db_path = app_handle.path().app_data_dir().expect("Failed to get app data dir").join("backups.db");
+                    if db_path.exists() {
+                        let db_url = format!("sqlite:{}", db_path.to_string_lossy());
+                        if let Ok(pool) = SqlitePool::connect(&db_url).await {
+                            if let Ok(row) = sqlx::query("SELECT value FROM settings WHERE key = 'window_size_mode'")
+                                .fetch_one(&pool).await {
+                                    if let Ok(val) = row.try_get::<String, _>("value") {
+                                        mode = val;
+                                    }
+                                }
+                        }
+                    }
+
+                    match mode.as_str() {
+                        "maximized" => {
+                            let _ = main_window.maximize();
+                        }
+                        "fixed" => {
+                            let _ = main_window.set_size(tauri::Size::Logical(tauri::LogicalSize {
+                                width: 1024.0,
+                                height: 768.0,
+                            }));
+                            let _ = main_window.center();
+                        }
+                        _ => { // "suitable" or default
+                            if let Ok(Some(monitor)) = main_window.primary_monitor() {
+                                let size = monitor.size();
+                                let scale_factor = monitor.scale_factor();
+                                
+                                let logical_width = size.width as f64 / scale_factor;
+                                let logical_height = size.height as f64 / scale_factor;
+                                
+                                let mut target_width = logical_width * 0.85;
+                                let mut target_height = logical_height * 0.85;
+                                
+                                if target_width > 1280.0 { target_width = 1280.0; }
+                                if target_width < 1024.0 { target_width = 1024.0; }
+                                
+                                if target_height > 850.0 { target_height = 850.0; }
+                                if target_height < 720.0 { target_height = 720.0; }
+
+                                let _ = main_window.set_size(tauri::Size::Logical(tauri::LogicalSize {
+                                    width: target_width,
+                                    height: target_height,
+                                }));
+                                let _ = main_window.center();
+                            }
+                        }
+                    }
+                }
+            });
+
             // Create Menu Items
             let status_i = MenuItem::with_id(app, "status", "● Scheduler: Running", false, None::<&str>)?;
             let quit_i = MenuItem::with_id(app, "quit", "Exit DBGuardX", true, None::<&str>)?;
@@ -135,7 +238,8 @@ pub fn run() {
             commands::diagnostics::kill_process,
             commands::diagnostics::fix_port_conflict,
             commands::splash::close_splashscreen,
-            commands::splash::show_splashscreen
+            commands::splash::show_splashscreen,
+            apply_window_size
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

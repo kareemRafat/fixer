@@ -42,6 +42,7 @@ export const getDb = async () => {
       await db.execute("INSERT INTO settings (key, value) VALUES ('minimize_to_tray', 'true')");
       await db.execute("INSERT INTO settings (key, value) VALUES ('start_minimized', 'false')");
       await db.execute("INSERT INTO settings (key, value) VALUES ('auto_verify', 'false')");
+      await db.execute("INSERT INTO settings (key, value) VALUES ('window_size_mode', 'suitable')");
     }
 
     // Migration for new settings
@@ -55,6 +56,11 @@ export const getDb = async () => {
     const autoVerify = await db.select<any[]>("SELECT * FROM settings WHERE key = 'auto_verify'");
     if (autoVerify.length === 0) {
       await db.execute("INSERT INTO settings (key, value) VALUES ('auto_verify', 'false')");
+    }
+
+    const windowSizeMode = await db.select<any[]>("SELECT * FROM settings WHERE key = 'window_size_mode'");
+    if (windowSizeMode.length === 0) {
+      await db.execute("INSERT INTO settings (key, value) VALUES ('window_size_mode', 'suitable')");
     }
 
     await db.execute(`

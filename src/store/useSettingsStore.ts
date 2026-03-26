@@ -17,6 +17,7 @@ interface SettingsState {
   minimizeToTray: boolean;
   startMinimized: boolean;
   autoVerify: boolean;
+  windowSizeMode: 'suitable' | 'fixed' | 'maximized';
   isInitialized: boolean;
   
   setBackupPath: (path: string) => void;
@@ -32,6 +33,7 @@ interface SettingsState {
   setMinimizeToTray: (enabled: boolean) => Promise<void>;
   setStartMinimized: (enabled: boolean) => Promise<void>;
   setAutoVerify: (enabled: boolean) => void;
+  setWindowSizeMode: (mode: 'suitable' | 'fixed' | 'maximized') => void;
   initialize: () => Promise<void>;
   syncToDb: () => Promise<void>;
 }
@@ -52,6 +54,7 @@ export const useSettingsStore = create<SettingsState>()(
       minimizeToTray: true,
       startMinimized: false,
       autoVerify: false,
+      windowSizeMode: 'suitable',
       isInitialized: false,
 
       setBackupPath: (path) => { set({ backupPath: path }); get().syncToDb(); },
@@ -69,6 +72,11 @@ export const useSettingsStore = create<SettingsState>()(
         document.documentElement.style.setProperty('--accent', color);
       },
       setAutoVerify: (enabled) => { set({ autoVerify: enabled }); get().syncToDb(); },
+      setWindowSizeMode: (mode) => { 
+        set({ windowSizeMode: mode }); 
+        get().syncToDb(); 
+        invoke("apply_window_size", { mode });
+      },
       
       setRunOnStartup: async (enabled) => { 
         const { enable, disable } = await import("@tauri-apps/plugin-autostart");
@@ -137,6 +145,7 @@ export const useSettingsStore = create<SettingsState>()(
           const startMinimized = dbSettings['start_minimized'] === 'true';
           const autoVerify = dbSettings['auto_verify'] === 'true';
           const primaryColor = dbSettings['primary_color'] || get().primaryColor;
+          const windowSizeMode = (dbSettings['window_size_mode'] as any) || 'suitable';
 
           // Sync backend state
           await invoke("update_minimize_to_tray", { enabled: minimizeToTray });
@@ -159,6 +168,7 @@ export const useSettingsStore = create<SettingsState>()(
             startMinimized,
             autoVerify,
             primaryColor,
+            windowSizeMode,
             isInitialized: true
           });
 
@@ -186,6 +196,7 @@ export const useSettingsStore = create<SettingsState>()(
           await db.execute("UPDATE settings SET value = $1 WHERE key = 'minimize_to_tray'", [state.minimizeToTray.toString()]);
           await db.execute("UPDATE settings SET value = $1 WHERE key = 'start_minimized'", [state.startMinimized.toString()]);
           await db.execute("UPDATE settings SET value = $1 WHERE key = 'auto_verify'", [state.autoVerify.toString()]);
+          await db.execute("UPDATE settings SET value = $1 WHERE key = 'window_size_mode'", [state.windowSizeMode]);
         } catch (e) {
           console.error("Failed to sync settings to DB:", e);
         }
