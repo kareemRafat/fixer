@@ -560,10 +560,18 @@ pub fn detect_xampp_data_path() -> Option<String> {
         "xampp\\mysql\\data",
         "laragon\\bin\\mysql",
         "laragon\\bin\\mariadb",
+        "laragon\\data\\mysql",
+        "laragon\\data\\mariadb",
+        "laragon6\\bin\\mysql",
+        "laragon6\\bin\\mariadb",
+        "laragon6\\data\\mysql",
+        "laragon6\\data\\mariadb",
         "wamp64\\bin\\mysql",
         "wamp\\bin\\mysql",
         "mysql\\data",
         "ProgramData\\MySQL",
+        "Program Files\\MySQL",
+        "Program Files (x86)\\MySQL",
     ];
 
     for drive in drives {
@@ -572,31 +580,41 @@ pub fn detect_xampp_data_path() -> Option<String> {
             let p = std::path::Path::new(&path);
             
             if p.exists() {
-                // If it's a direct data folder (XAMPP style)
-                if path.ends_with("data") {
+                // 1. Direct check: is this the data folder itself?
+                // A valid MySQL data folder almost always contains a 'mysql' subfolder
+                if p.join("mysql").exists() {
                     return Some(path);
                 }
 
-                // For MySQL Installer (ProgramData)
-                if pattern == "ProgramData\\MySQL" {
+                // 2. Special case for MySQL Installer (ProgramData / Program Files)
+                if pattern.contains("MySQL") && !pattern.ends_with("data") {
                     if let Ok(entries) = std::fs::read_dir(p) {
                         for entry in entries.flatten() {
-                            let sub_path = entry.path().join("Data");
-                            if sub_path.exists() {
-                                return Some(sub_path.to_string_lossy().to_string());
+                            let entry_path = entry.path();
+                            if entry_path.is_dir() {
+                                for sub_dir in ["Data", "data"] {
+                                    let sub_path = entry_path.join(sub_dir);
+                                    if sub_path.exists() && sub_path.join("mysql").exists() {
+                                        return Some(sub_path.to_string_lossy().to_string());
+                                    }
+                                }
                             }
                         }
                     }
-                    continue;
                 }
 
-                // For Laragon/WAMP, we need to look one level deeper for the data folder
+                // 3. For Laragon/WAMP/etc (binaries folder containing versioned subfolders)
                 // e.g., C:\laragon\bin\mysql\mysql-8.0.30\data
                 if let Ok(entries) = std::fs::read_dir(p) {
                     for entry in entries.flatten() {
-                        let sub_path = entry.path().join("data");
-                        if sub_path.exists() {
-                            return Some(sub_path.to_string_lossy().to_string());
+                        let entry_path = entry.path();
+                        if entry_path.is_dir() {
+                            for sub_dir in ["data", "Data"] {
+                                let sub_path = entry_path.join(sub_dir);
+                                if sub_path.exists() && sub_path.join("mysql").exists() {
+                                    return Some(sub_path.to_string_lossy().to_string());
+                                }
+                            }
                         }
                     }
                 }
