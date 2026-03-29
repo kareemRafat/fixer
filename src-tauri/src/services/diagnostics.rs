@@ -96,6 +96,49 @@ pub fn find_config_file(service_type: &str) -> Option<String> {
     let drives = ["C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
     
     for drive in drives {
+        // 1. Laragon specific (read laragon.ini for active version)
+        let laragon_base = format!("{}:\\laragon", drive);
+        if std::path::Path::new(&laragon_base).exists() {
+            let ini_path = format!("{}\\usr\\laragon.ini", laragon_base);
+            if let Ok(content) = std::fs::read_to_string(&ini_path) {
+                let mut version = None;
+                let section_header = if service_type == "mysql" { "[mysql]" } else { "[apache]" };
+                let mut in_section = false;
+
+                for line in content.lines() {
+                    let line = line.trim();
+                    if line.to_lowercase().starts_with(section_header) {
+                        in_section = true;
+                        continue;
+                    }
+                    if line.starts_with('[') && line.ends_with(']') {
+                        in_section = false;
+                        continue;
+                    }
+                    if in_section && line.contains("Version=") {
+                        version = Some(line.split('=').nth(1).unwrap_or("").trim().to_string());
+                        break;
+                    }
+                }
+
+                if let Some(ver) = version {
+                    if service_type == "mysql" {
+                        let sub_dirs = ["mysql", "mariadb"];
+                        for sub in sub_dirs {
+                            let p1 = format!("{}\\bin\\{}\\{}\\my.ini", laragon_base, sub, ver);
+                            let p2 = format!("{}\\bin\\{}\\{}\\bin\\my.ini", laragon_base, sub, ver);
+                            if std::path::Path::new(&p1).exists() { return Some(p1); }
+                            if std::path::Path::new(&p2).exists() { return Some(p2); }
+                        }
+                    } else if service_type == "apache" {
+                        let p = format!("{}\\bin\\apache\\{}\\conf\\httpd.conf", laragon_base, ver);
+                        if std::path::Path::new(&p).exists() { return Some(p); }
+                    }
+                }
+            }
+        }
+
+        // 2. Fallback to common bases
         let common_bases = [
             format!("{}:\\xampp", drive),
             format!("{}:\\laragon\\bin", drive),
@@ -113,6 +156,7 @@ pub fn find_config_file(service_type: &str) -> Option<String> {
                 let xampp_paths = [
                     format!("{}\\mysql\\bin\\my.ini", base),
                     format!("{}\\mysql\\my.ini", base),
+                    format!("{}\\mysql\\bin\\my.cnf", base),
                 ];
                 for p in xampp_paths {
                     if std::path::Path::new(&p).exists() {
