@@ -35,22 +35,22 @@ pub async fn start_one_click_install(
             fs::remove_file(&laragon_exe_path).ok();
             fs::remove_file(&php_zip_path).ok();
             fs::remove_file(&pma_zip_path).ok();
+            fs::remove_dir_all(&temp_dir).ok();
             return true;
         }
         false
     };
 
-    // Cleanup before starting
-    fs::remove_file(&laragon_exe_path).ok();
-    fs::remove_file(&php_zip_path).ok();
-    fs::remove_file(&pma_zip_path).ok();
-
-    // 2. Download Laragon
-    app.emit("install-status", "Downloading Laragon...").unwrap_or(());
-    installer::download_file(&app, "laragon", &config.laragon.url, &laragon_exe_path).await.map_err(|e| {
-        check_cancel();
-        e
-    })?;
+    // 2. Download Laragon (Skip if already exists)
+    if !laragon_exe_path.exists() {
+        app.emit("install-status", "Downloading Laragon...").unwrap_or(());
+        installer::download_file(&app, "laragon", &config.laragon.url, &laragon_exe_path).await.map_err(|e| {
+            check_cancel();
+            e
+        })?;
+    } else {
+        app.emit("install-status", "Laragon installer found, skipping download.").unwrap_or(());
+    }
     if check_cancel() { return Err("Cancelled".to_string()); }
 
     // 3. Run Laragon Installer (Interactive)
@@ -59,7 +59,6 @@ pub async fn start_one_click_install(
         check_cancel();
         e
     })?;
-    fs::remove_file(&laragon_exe_path).ok(); 
     if check_cancel() { return Err("Cancelled".to_string()); }
 
     // 4. Detect Installation Path
@@ -67,14 +66,18 @@ pub async fn start_one_click_install(
     let laragon_base = installer::detect_laragon_path()?;
     app.emit("install-status", format!("Laragon detected at: {}", laragon_base.display())).unwrap_or(());
 
-    // 5. Download & Extract PHP
+    // 5. Download & Extract PHP (Skip download if exists)
     let php_target = laragon_base.join(config.php.target_subfolder.as_deref().unwrap_or("bin/php/php-8.3"));
     
-    app.emit("install-status", "Downloading PHP Engine...").unwrap_or(());
-    installer::download_file(&app, "php", &config.php.url, &php_zip_path).await.map_err(|e| {
-        check_cancel();
-        e
-    })?;
+    if !php_zip_path.exists() {
+        app.emit("install-status", "Downloading PHP Engine...").unwrap_or(());
+        installer::download_file(&app, "php", &config.php.url, &php_zip_path).await.map_err(|e| {
+            check_cancel();
+            e
+        })?;
+    } else {
+        app.emit("install-status", "PHP ZIP found, skipping download.").unwrap_or(());
+    }
     if check_cancel() { return Err("Cancelled".to_string()); }
     
     app.emit("install-status", "Extracting PHP...").unwrap_or(());
@@ -82,17 +85,20 @@ pub async fn start_one_click_install(
         check_cancel();
         e
     })?;
-    fs::remove_file(&php_zip_path).ok(); 
     if check_cancel() { return Err("Cancelled".to_string()); }
 
-    // 6. Download & Extract phpMyAdmin
+    // 6. Download & Extract phpMyAdmin (Skip download if exists)
     let pma_target = laragon_base.join(config.phpmyadmin.target_subfolder.as_deref().unwrap_or("etc/apps/phpMyAdmin"));
     
-    app.emit("install-status", "Downloading phpMyAdmin...").unwrap_or(());
-    installer::download_file(&app, "phpmyadmin", &config.phpmyadmin.url, &pma_zip_path).await.map_err(|e| {
-        check_cancel();
-        e
-    })?;
+    if !pma_zip_path.exists() {
+        app.emit("install-status", "Downloading phpMyAdmin...").unwrap_or(());
+        installer::download_file(&app, "phpmyadmin", &config.phpmyadmin.url, &pma_zip_path).await.map_err(|e| {
+            check_cancel();
+            e
+        })?;
+    } else {
+        app.emit("install-status", "phpMyAdmin ZIP found, skipping download.").unwrap_or(());
+    }
     if check_cancel() { return Err("Cancelled".to_string()); }
     
     app.emit("install-status", "Extracting phpMyAdmin...").unwrap_or(());
@@ -100,7 +106,6 @@ pub async fn start_one_click_install(
         check_cancel();
         e
     })?;
-    fs::remove_file(&pma_zip_path).ok(); 
     if check_cancel() { return Err("Cancelled".to_string()); }
 
     // 7. Update laragon.ini
@@ -138,7 +143,7 @@ pub async fn start_one_click_install(
         status: "Success".to_string(),
     }).unwrap_or(());
 
-    // Final cleanup of temp dir
+    // Final cleanup of temp dir ONLY on success
     fs::remove_dir_all(&temp_dir).ok();
 
     Ok(())
