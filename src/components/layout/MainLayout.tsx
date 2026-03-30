@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Database, History, Activity, Settings, Menu, ClipboardClock, Clock } from "lucide-react";
+import { LayoutDashboard, Database, History, Activity, Settings, Menu, ClipboardClock, Clock, Server } from "lucide-react";
 import { ThemeToggle } from "../ThemeToggle";
 import { getActiveSchedulesCount } from "@/lib/db";
 
@@ -58,6 +58,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           <SidebarItem to="/" icon={<LayoutDashboard className="h-5 w-5" />} label="Dashboard" />
           <SidebarItem to="/databases" icon={<Database className="h-5 w-5" />} label="Databases" />
+          <SidebarItem to="/environment" icon={<Server className="h-5 w-5" />} label="Environment" />
           <SidebarItem to="/backups" icon={<History className="h-5 w-5" />} label="Backups" />
           <SidebarItem to="/diagnostics" icon={<Activity className="h-5 w-5" />} label="Diagnostics" />
           <SidebarItem to="/schedules" icon={<ClipboardClock className="h-5 w-5" />} label="Schedules" />

@@ -458,8 +458,10 @@ const Databases = () => {
 
       {error && (
         <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
+          <div className="flex items-center gap-2 mb-1">
+            <AlertCircle className="h-4 w-4" />
           <AlertTitle>Connection Error</AlertTitle>
+          </div>
           <AlertDescription className="dark:text-red-400">{error}</AlertDescription>
         </Alert>
       )}

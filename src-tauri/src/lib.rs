@@ -240,6 +240,8 @@ pub fn run() {
             commands::diagnostics::fix_port_conflict,
             commands::splash::close_splashscreen,
             commands::splash::show_splashscreen,
+            commands::installer::start_one_click_install,
+            commands::installer::cancel_install,
             apply_window_size
         ])
         .run(tauri::generate_context!())

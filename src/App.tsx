@@ -2,6 +2,7 @@ import { HashRouter as Router, Routes, Route } from "react-router-dom";
 import MainLayout from "./components/layout/MainLayout";
 import Dashboard from "./pages/Dashboard";
 import Databases from "./pages/Databases";
+import Environment from "./pages/Environment";
 import Backups from "./pages/Backups";
 import Diagnostics from "./pages/Diagnostics";
 import Schedules from "./pages/Schedules";
@@ -39,6 +40,7 @@ function App() {
                 <Routes>
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/databases" element={<Databases />} />
+                  <Route path="/environment" element={<Environment />} />
                   <Route path="/backups" element={<Backups />} />
                   <Route path="/diagnostics" element={<Diagnostics />} />
                   <Route path="/schedules" element={<Schedules />} />
