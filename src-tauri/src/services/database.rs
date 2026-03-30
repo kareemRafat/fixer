@@ -567,81 +567,102 @@ pub fn detect_xampp_data_path() -> Option<String> {
                 let mut data_dir = None;
                 let mut version = None;
                 let mut in_mysql_section = false;
+                let mut in_prefs_section = false;
 
                 for line in content.lines() {
                     let line = line.trim();
-                    if line.to_lowercase().starts_with("[mysql]") {
+                    let line_lower = line.to_lowercase();
+                    if line_lower.starts_with("[mysql]") {
                         in_mysql_section = true;
+                        in_prefs_section = false;
+                        continue;
+                    }
+                    if line_lower.starts_with("[preferences]") {
+                        in_prefs_section = true;
+                        in_mysql_section = false;
                         continue;
                     }
                     if line.starts_with('[') && line.ends_with(']') {
                         in_mysql_section = false;
+                        in_prefs_section = false;
                         continue;
                     }
 
                     if in_mysql_section {
+                        if line.contains("Version=") {
+                             version = Some(line.split('=').nth(1).unwrap_or("").trim().to_string());
+                        } else if line.contains("DataDir=") {
+                             data_dir = Some(line.split('=').nth(1).unwrap_or("").trim().to_string());
+                        }
+                    } else if in_prefs_section {
                         if line.contains("DataDir=") {
                              data_dir = Some(line.split('=').nth(1).unwrap_or("").trim().to_string());
-                        } else if line.contains("Version=") {
-                             version = Some(line.split('=').nth(1).unwrap_or("").trim().to_string());
                         }
                     }
                 }
 
-                if let Some(mut dir) = data_dir {
-                    // Laragon sometimes uses relative paths (e.g. DataDir=./data)
-                    if dir.starts_with('.') {
-                        dir = dir.replacen('.', &laragon_base, 1);
-                    }
-                    
-                    // Ensure backslashes for Windows
-                    dir = dir.replace("/", "\\");
-                    
-                    // 1.1 Try the versioned subfolder if version is known (e.g., C:\laragon\data\mysql-8.0.30-winx64)
-                    if let Some(ver) = version {
-                        // Try exact version folder
-                        let ver_path = std::path::Path::new(&dir).join(&ver);
-                        if ver_path.exists() && ver_path.join("mysql").exists() {
-                            return Some(ver_path.to_string_lossy().to_string());
-                        }
-                        
-                        // Try shortened version as mentioned in fix.md (e.g., mysql-8.0.30-winx64 -> mysql-8)
-                        // This handles cases like C:\laragon\data\mysql-8\ or C:\laragon\data\mariadb-11.7\
-                        let parts: Vec<&str> = ver.split('-').collect();
-                        if parts.len() >= 2 {
-                             let main_part = parts[0]; // e.g., "mysql" or "mariadb"
-                             let version_full = parts[1]; // e.g., "8.0.30" or "11.7.2"
-                             
-                             // Try major.minor (e.g., 11.7)
-                             let ver_parts: Vec<&str> = version_full.split('.').collect();
-                             if ver_parts.len() >= 2 {
-                                 let major_minor = format!("{}-{}", main_part, format!("{}.{}", ver_parts[0], ver_parts[1]));
-                                 let mm_path = std::path::Path::new(&dir).join(major_minor);
-                                 if mm_path.exists() && mm_path.join("mysql").exists() {
-                                     return Some(mm_path.to_string_lossy().to_string());
-                                 }
-                             }
+                // Default if not found in INI
+                let mut dir = if let Some(d) = data_dir {
+                    d
+                } else {
+                    format!("{}\\data", laragon_base)
+                };
 
-                             // Try just major (e.g., mysql-8)
-                             let major_version = ver_parts[0];
-                             let short_name = format!("{}-{}", main_part, major_version);
-                             let short_path = std::path::Path::new(&dir).join(short_name);
-                             if short_path.exists() && short_path.join("mysql").exists() {
-                                 return Some(short_path.to_string_lossy().to_string());
-                             }
-                        }
+                // Laragon sometimes uses relative paths (e.g. DataDir=./data or DataDir=data)
+                if dir.starts_with('.') {
+                    dir = dir.replacen('.', &laragon_base, 1);
+                } else if !dir.contains(':') && !dir.starts_with('\\') {
+                    // It's relative but doesn't start with '.' (e.g. DataDir=data)
+                    dir = format!("{}\\{}", laragon_base, dir);
+                }
+                
+                // Ensure backslashes for Windows
+                dir = dir.replace("/", "\\");
+                
+                // 1.1 Try the versioned subfolder if version is known
+                if let Some(ver) = version {
+                    // Try exact version folder
+                    let ver_path = std::path::Path::new(&dir).join(&ver);
+                    if ver_path.exists() && ver_path.join("mysql").exists() {
+                        return Some(ver_path.to_string_lossy().to_string());
                     }
                     
-                    // 1.2 Try the default 'mysql' subfolder (e.g., C:\laragon\data\mysql)
-                    let mysql_default = std::path::Path::new(&dir).join("mysql");
-                    if mysql_default.exists() && mysql_default.join("mysql").exists() {
-                         return Some(mysql_default.to_string_lossy().to_string());
-                    }
+                    // Try shortened version as mentioned in fix.md (e.g., mysql-8.0.30-winx64 -> mysql-8)
+                    // This handles cases like C:\laragon\data\mysql-8\ or C:\laragon\data\mariadb-11.7\
+                    let parts: Vec<&str> = ver.split('-').collect();
+                    if parts.len() >= 2 {
+                            let main_part = parts[0]; // e.g., "mysql" or "mariadb"
+                            let version_full = parts[1]; // e.g., "8.0.30" or "11.7.2"
+                            
+                            // Try major.minor (e.g., 11.7)
+                            let ver_parts: Vec<&str> = version_full.split('.').collect();
+                            if ver_parts.len() >= 2 {
+                                let major_minor = format!("{}-{}", main_part, format!("{}.{}", ver_parts[0], ver_parts[1]));
+                                let mm_path = std::path::Path::new(&dir).join(major_minor);
+                                if mm_path.exists() && mm_path.join("mysql").exists() {
+                                    return Some(mm_path.to_string_lossy().to_string());
+                                }
+                            }
 
-                    // 1.3 Try the DataDir itself if it contains a 'mysql' folder
-                    if std::path::Path::new(&dir).join("mysql").exists() {
-                        return Some(dir);
+                            // Try just major (e.g., mysql-8)
+                            let major_version = ver_parts[0];
+                            let short_name = format!("{}-{}", main_part, major_version);
+                            let short_path = std::path::Path::new(&dir).join(short_name);
+                            if short_path.exists() && short_path.join("mysql").exists() {
+                                return Some(short_path.to_string_lossy().to_string());
+                            }
                     }
+                }
+                
+                // 1.2 Try the default 'mysql' subfolder (e.g., C:\laragon\data\mysql)
+                let mysql_default = std::path::Path::new(&dir).join("mysql");
+                if mysql_default.exists() && mysql_default.join("mysql").exists() {
+                        return Some(mysql_default.to_string_lossy().to_string());
+                }
+
+                // 1.3 Try the DataDir itself if it contains a 'mysql' folder
+                if std::path::Path::new(&dir).join("mysql").exists() {
+                    return Some(dir);
                 }
             }
         }
@@ -680,11 +701,17 @@ pub fn detect_xampp_data_path() -> Option<String> {
                     return Some(path);
                 }
 
-                // Check versioned subfolders (for stacks that keep data inside bin/version/)
+                // Check versioned subfolders
                 if let Ok(entries) = std::fs::read_dir(p) {
                     for entry in entries.flatten() {
                         let entry_path = entry.path();
                         if entry_path.is_dir() {
+                            // 1. Check if the directory itself is a data folder (e.g. C:\laragon\data\mysql-8)
+                            if entry_path.join("mysql").exists() {
+                                return Some(entry_path.to_string_lossy().to_string());
+                            }
+
+                            // 2. Check for sub-data folders (e.g. C:\laragon\bin\mysql\mysql-8\data)
                             for sub_dir in ["data", "Data"] {
                                 let sub_path = entry_path.join(sub_dir);
                                 if sub_path.exists() && sub_path.join("mysql").exists() {
