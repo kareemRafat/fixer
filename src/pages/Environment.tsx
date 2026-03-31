@@ -88,11 +88,8 @@ const Environment = () => {
               {/* Icon Section */}
               <div className="relative inline-block">
                 <div className="absolute inset-0 bg-green-500/20 rounded-full blur-2xl scale-150 animate-pulse" />
-                <div className="relative w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-b from-green-400 to-green-600 rounded-3xl flex items-center justify-center  transform -rotate-6 hover:rotate-0 transition-transform duration-500">
+                <div className="relative w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-b from-green-400 to-green-600 rounded-3xl flex items-center justify-center  transform  hover:-rotate-6 transition-transform duration-500">
                   <CheckCircle2 className="h-12 w-12 sm:h-16 sm:w-16 text-white" />
-                </div>
-                <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground p-2 rounded-xl shadow-lg animate-bounce">
-                  <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
                 </div>
               </div>
 
@@ -207,47 +204,69 @@ const Environment = () => {
       </Card>
 
       {installing && (
-        <Card className="border-primary/20 bg-primary/5 animate-in fade-in slide-in-from-bottom-4">
-          <CardContent className="pt-6 space-y-4">
-            <div className="flex justify-between items-center mb-1">
-              <div className="flex items-center gap-2 text-sm font-medium">
-                {progress < 100 ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
-                )}
-                <span>{status}</span>
+        <Card className="border-border shadow-md animate-in fade-in slide-in-from-bottom-2">
+          <CardContent className="pt-6 space-y-5">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-lg">
+                  <Loader2 className="h-5 w-5 text-blue-600 dark:text-blue-400 animate-spin" />
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-foreground">{status}</div>
+                  <div className="text-xs text-muted-foreground uppercase tracking-tight font-medium">Installing Components...</div>
+                </div>
               </div>
-              <span className="text-sm font-mono">{progress}%</span>
+              <div className="text-xl font-bold tabular-nums text-blue-600 dark:text-blue-400">
+                {progress}%
+              </div>
             </div>
 
-            <div className="relative h-4 w-full bg-secondary overflow-hidden rounded-full">
+            <div className="h-3 w-full bg-secondary rounded-full overflow-hidden">
               <div
-                className="h-full bg-primary transition-all duration-500 ease-out"
+                className="h-full bg-blue-600 dark:bg-blue-500 transition-all duration-300 ease-linear"
                 style={{ width: `${progress}%` }}
               />
             </div>
 
-            <div className="grid grid-cols-3 gap-4 text-center text-xs">
+            <div className="grid grid-cols-3 gap-2">
               <div
-                className={`p-2 rounded-lg border ${currentComponent === "laragon" ? "bg-primary/10 border-primary/30 text-primary" : "bg-muted border-transparent opacity-50"}`}
+                className={`flex items-center justify-center gap-2 p-2 rounded-md border text-[11px] font-bold transition-colors ${
+                  currentComponent === "laragon" 
+                    ? "bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-300" 
+                    : "bg-muted/50 border-transparent text-muted-foreground"
+                }`}
               >
+                {currentComponent === "laragon" && <div className="h-1.5 w-1.5 rounded-full bg-blue-600 animate-pulse" />}
                 Laragon
               </div>
               <div
-                className={`p-2 rounded-lg border ${currentComponent === "php" ? "bg-primary/10 border-primary/30 text-primary" : "bg-muted border-transparent opacity-50"}`}
+                className={`flex items-center justify-center gap-2 p-2 rounded-md border text-[11px] font-bold transition-colors ${
+                  currentComponent === "php" 
+                    ? "bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-300" 
+                    : "bg-muted/50 border-transparent text-muted-foreground"
+                }`}
               >
-                PHP
+                {currentComponent === "php" && <div className="h-1.5 w-1.5 rounded-full bg-blue-600 animate-pulse" />}
+                PHP 8.3
               </div>
               <div
-                className={`p-2 rounded-lg border ${currentComponent === "phpmyadmin" ? "bg-primary/10 border-primary/30 text-primary" : "bg-muted border-transparent opacity-50"}`}
+                className={`flex items-center justify-center gap-2 p-2 rounded-md border text-[11px] font-bold transition-colors ${
+                  currentComponent === "phpmyadmin" 
+                    ? "bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-300" 
+                    : "bg-muted/50 border-transparent text-muted-foreground"
+                }`}
               >
+                {currentComponent === "phpmyadmin" && <div className="h-1.5 w-1.5 rounded-full bg-blue-600 animate-pulse" />}
                 phpMyAdmin
               </div>
             </div>
 
             <div className="pt-2">
-                <Button variant="outline" className="w-full border-destructive/20 text-destructive hover:bg-destructive/10" onClick={handleCancel}>
+                <Button 
+                  variant="outline" 
+                  className="w-full border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground transition-all font-bold" 
+                  onClick={handleCancel}
+                >
                     <XCircle className="h-4 w-4 mr-2" />
                     Cancel Installation
                 </Button>
