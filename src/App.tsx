@@ -11,16 +11,22 @@ import SplashScreen from "./pages/SplashScreen";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { useSettingsStore } from "@/store/useSettingsStore";
+import { useEnvironmentStore } from "@/store/useEnvironmentStore";
 import { useEffect } from "react";
 import "./App.css";
 
 function App() {
   const primaryColor = useSettingsStore((state) => state.primaryColor);
   const initialize = useSettingsStore((state) => state.initialize);
+  const initEnvironmentListeners = useEnvironmentStore((state) => state.initListeners);
 
   useEffect(() => {
     initialize();
-  }, [initialize]);
+    const cleanup = initEnvironmentListeners();
+    return () => {
+      cleanup();
+    };
+  }, [initialize, initEnvironmentListeners]);
 
   useEffect(() => {
     document.documentElement.style.setProperty("--primary", primaryColor);

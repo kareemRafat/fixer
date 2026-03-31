@@ -9,6 +9,11 @@ pub async fn cancel_install() {
 }
 
 #[command]
+pub async fn is_laragon_installed() -> bool {
+    installer::detect_laragon_path().is_ok()
+}
+
+#[command]
 pub async fn start_one_click_install(
     app: AppHandle,
     config_url: String,

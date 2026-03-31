@@ -1,6 +1,4 @@
-import { useState, useEffect } from "react";
-import { invoke } from "@tauri-apps/api/core";
-import { listen } from "@tauri-apps/api/event";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,59 +14,44 @@ import {
   Loader2,
   ShieldAlert,
   XCircle,
+  RefreshCw,
+  Sparkles,
+  ArrowRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-
-interface ProgressPayload {
-  component: String;
-  progress: number;
-  status: string;
-}
+import { useEnvironmentStore } from "@/store/useEnvironmentStore";
+import { Link } from "react-router-dom";
 
 const Environment = () => {
   const configUrl = "https://db.createivo.net/downloads/setup-config.json";
-  const [installing, setInstalling] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [status, setStatus] = useState("Ready to install");
-  const [currentComponent, setCurrentComponent] = useState("");
+  const [showOverlay, setShowOverlay] = useState(true);
+  
+  const {
+    installing,
+    progress,
+    status,
+    currentComponent,
+    isLaragonInstalled,
+    checkLaragon,
+    startInstall,
+    cancelInstall,
+  } = useEnvironmentStore();
 
   useEffect(() => {
-    const unlistenProgress = listen<ProgressPayload>(
-      "install-progress",
-      (event) => {
-        setProgress(event.payload.progress);
-        setCurrentComponent(event.payload.component as string);
-      },
-    );
-
-    const unlistenStatus = listen<string>("install-status", (event) => {
-      setStatus(event.payload);
-    });
-
-    return () => {
-      unlistenProgress.then((f) => f());
-      unlistenStatus.then((f) => f());
-    };
-  }, []);
+    checkLaragon();
+  }, [checkLaragon]);
 
   const handleInstall = async () => {
     try {
-      setInstalling(true);
-      setProgress(0);
-      setStatus("Starting installation...");
-
-      await invoke("start_one_click_install", {
-        configUrl,
-      });
-
+      setShowOverlay(false);
+      await startInstall(configUrl);
       if (status !== "Cancelled") {
         toast.success("Environment setup completed successfully!");
       }
     } catch (error) {
       if (error === "Cancelled") {
         toast.info("Installation cancelled.");
-        setStatus("Cancelled");
       } else {
         console.error(error);
         const errorMsg = String(error);
@@ -82,54 +65,98 @@ const Environment = () => {
         } else {
           toast.error(`Installation failed: ${error}`);
         }
-        setStatus(`Error: ${error}`);
       }
-    } finally {
-      setInstalling(false);
     }
   };
 
   const handleCancel = async () => {
-    try {
-      await invoke("cancel_install");
-      setStatus("Cancelling...");
-    } catch (e) {
-      console.error(e);
-    }
+    await cancelInstall();
   };
 
   return (
-    <div className="p-8 max-w-4xl mx-auto space-y-6">
+    <div className="p-8 max-w-6xl mx-auto space-y-6 relative min-h-[100vh]">
+      {/* Redesigned Full Page Overlay when Laragon is Detected */}
+      {isLaragonInstalled && showOverlay && !installing && (
+        <div className="absolute inset-0 z-[100] flex items-center justify-center p-6 sm:p-12 overflow-hidden rounded-xl">
+          {/* Background Effects */}
+          <div className="absolute inset-0 bg-background/60 backdrop-blur-3xl" />
+          <div className="absolute inset-0 bg-gradient-to-tr from-green-500/5 via-transparent to-primary/5" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-green-500/10 rounded-full blur-[120px] pointer-events-none" />
+          
+          <div className="relative max-w-2xl w-full animate-in fade-in zoom-in duration-500 slide-in-from-bottom-8">
+            <div className="text-center space-y-8">
+              {/* Icon Section */}
+              <div className="relative inline-block">
+                <div className="absolute inset-0 bg-green-500/20 rounded-full blur-2xl scale-150 animate-pulse" />
+                <div className="relative w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-b from-green-400 to-green-600 rounded-3xl flex items-center justify-center  transform -rotate-6 hover:rotate-0 transition-transform duration-500">
+                  <CheckCircle2 className="h-12 w-12 sm:h-16 sm:w-16 text-white" />
+                </div>
+                <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground p-2 rounded-xl shadow-lg animate-bounce">
+                  <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
+                </div>
+              </div>
+
+              {/* Text Content */}
+              <div className="space-y-4">
+                <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-foreground">
+                  System <span className="text-green-500">Ready.</span>
+                </h2>
+                <p className="text-lg sm:text-xl text-muted-foreground max-w-lg mx-auto leading-relaxed">
+                  We've detected Laragon on your machine. Your environment is perfectly configured and optimized for DBGuardX.
+                </p>
+              </div>
+
+              {/* Action Cards/Buttons */}
+              <div className="grid gap-4 sm:grid-cols-2 pt-4">
+                <Link to="/" className="group flex flex-col items-start p-6 bg-card border border-border/50 rounded-2xl hover:border-primary/50 hover:bg-primary/5 transition-all text-left">
+                    <div className="p-2 bg-primary/10 rounded-lg mb-4 group-hover:scale-110 transition-transform">
+                        <Server className="h-5 w-5 text-primary" />
+                    </div>
+                    <h4 className="font-bold text-lg mb-1 flex items-center gap-2">
+                        Go to Dashboard
+                        <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                    </h4>
+                    <p className="text-sm text-muted-foreground">Start managing your databases and backups now.</p>
+                </Link>
+
+                <button 
+                    onClick={() => setShowOverlay(false)}
+                    className="group flex flex-col items-start p-6 bg-card border border-border/50 rounded-2xl hover:border-green-500/50 hover:bg-green-500/5 transition-all text-left"
+                >
+                    <div className="p-2 bg-green-500/10 rounded-lg mb-4 group-hover:scale-110 transition-transform">
+                        <RefreshCw className="h-5 w-5 text-green-500" />
+                    </div>
+                    <h4 className="font-bold text-lg mb-1 flex items-center gap-2 text-green-600 dark:text-green-400">
+                        Environment Settings
+                        <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                    </h4>
+                    <p className="text-sm text-muted-foreground">Reinstall or modify your existing environment setup.</p>
+                </button>
+              </div>
+
+              {/* Status Footer */}
+              <div className="pt-8 flex items-center justify-center gap-6">
+                <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60">
+                    <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+                    Local Engine Active
+                </div>
+                <div className="h-px w-8 bg-border/50" />
+                <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60">
+                    <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                    Secure Connection
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center gap-3 mb-2">
         <Server className="h-8 w-8 text-primary" />
         <h1 className="text-3xl font-bold tracking-tight text-foreground">
           Environment Setup
         </h1>
       </div>
-
-      <Alert
-        variant="destructive"
-        className="border-2 shadow-sm animate-in fade-in zoom-in duration-300"
-      >
-        <div className="flex gap-3 items-center">
-          <ShieldAlert className="h-4 w-4" />
-          <AlertTitle className="text-base font-bold">
-            Administrator Privileges Required
-          </AlertTitle>
-        </div>
-        <AlertDescription className="mt-2 text-sm opacity-90 leading-relaxed font-medium">
-          To successfully install Laragon and configure system-wide environment
-          variables, you must run this application with elevated permissions.
-          <div className="mt-3 p-2 bg-destructive-foreground/10 rounded-md border border-destructive-foreground/20">
-            Please{" "}
-            <span className="font-bold underline">
-              close DBGuardX and right-click "Run as Administrator"
-            </span>{" "}
-            to continue.
-          </div>
-        </AlertDescription>
-      </Alert>
-
       <p className="text-muted-foreground">
         Configure your development environment with one click. This will install
         Laragon, PHP, and phpMyAdmin.
@@ -159,7 +186,7 @@ const Environment = () => {
 
           <div className="pt-2">
             <Button
-              className="w-full h-12 text-lg font-bold"
+              className="w-full h-10 text-lg font-bold"
               onClick={handleInstall}
               disabled={installing}
             >
