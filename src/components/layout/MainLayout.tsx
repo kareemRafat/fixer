@@ -43,7 +43,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
         }
     };
     checkSchedules();
-    const interval = setInterval(checkSchedules, 2000);
+    const interval = setInterval(checkSchedules, 10000); // Check every 10 seconds
     return () => clearInterval(interval);
   }, []);
 

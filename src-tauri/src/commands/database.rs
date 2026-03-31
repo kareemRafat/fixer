@@ -1,29 +1,41 @@
 use crate::services::database::{self, DatabaseInfo, DetectedService, TableInfo};
 
 #[tauri::command]
-pub fn detect_services() -> Vec<DetectedService> {
-    database::detect_services()
+pub async fn detect_services() -> Result<Vec<DetectedService>, String> {
+    tokio::task::spawn_blocking(move || {
+        Ok(database::detect_services())
+    })
+    .await
+    .map_err(|e| e.to_string())?
 }
 
 #[tauri::command]
-pub fn list_databases(
-    host: &str,
+pub async fn list_databases(
+    host: String,
     port: u16,
-    user: &str,
-    password: &str,
+    user: String,
+    password: String,
 ) -> Result<Vec<DatabaseInfo>, String> {
-    database::list_databases(host, port, user, password)
+    tokio::task::spawn_blocking(move || {
+        database::list_databases(&host, port, &user, &password)
+    })
+    .await
+    .map_err(|e| e.to_string())?
 }
 
 #[tauri::command]
-pub fn list_tables(
-    host: &str,
+pub async fn list_tables(
+    host: String,
     port: u16,
-    user: &str,
-    password: &str,
-    db_name: &str,
+    user: String,
+    password: String,
+    db_name: String,
 ) -> Result<Vec<TableInfo>, String> {
-    database::list_tables(host, port, user, password, db_name)
+    tokio::task::spawn_blocking(move || {
+        database::list_tables(&host, port, &user, &password, &db_name)
+    })
+    .await
+    .map_err(|e| e.to_string())?
 }
 
 #[tauri::command]
@@ -35,7 +47,6 @@ pub async fn run_backup(
     databases: Vec<String>,
     dest_path: String,
 ) -> Result<String, String> {
-    // Run in a separate thread to avoid blocking the main thread
     tokio::task::spawn_blocking(move || {
         database::run_backup(&host, port, &user, &password, databases, &dest_path)
     })

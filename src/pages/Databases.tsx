@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import {
@@ -87,19 +87,30 @@ const Databases = () => {
   const [backupMode, setBackupMode] = useState<"sql" | "raw">("sql");
   const [shouldCompress, setShouldCompress] = useState(compressBackups);
 
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    detectServices();
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
   const detectServices = async () => {
+    if (servicesLoading) return;
     setServicesLoading(true);
     try {
-      // Ensure spinner shows for at least 500ms for a smoother transition
-      const [result] = await Promise.all([
-        invoke("detect_services"),
-        new Promise((resolve) => setTimeout(resolve, 500)),
-      ]);
-      setServices(result as DetectedService[]);
+      const result = await invoke("detect_services");
+      if (isMounted.current) {
+        setServices(result as DetectedService[]);
+      }
     } catch (err) {
       console.error("Failed to detect services:", err);
     } finally {
-      setServicesLoading(false);
+      if (isMounted.current) {
+        setServicesLoading(false);
+      }
     }
   };
 
@@ -107,34 +118,37 @@ const Databases = () => {
     setLoading(true);
     setError(null);
     try {
-      const [result] = await Promise.all([
-        invoke("list_databases", {
-          host,
-          port,
-          user,
-          password,
-        }),
-        new Promise((resolve) => setTimeout(resolve, 500)),
-      ]);
+      const result = await invoke("list_databases", {
+        host,
+        port,
+        user,
+        password,
+      });
 
-      const systemDbs = [
-        "information_schema",
-        "mysql",
-        "performance_schema",
-        "sys",
-        "phpmyadmin",
-      ];
-      const userDbs = (result as DatabaseInfo[]).filter(
-        (db) => !systemDbs.includes(db.name.toLowerCase()),
-      );
+      if (isMounted.current) {
+        const systemDbs = [
+          "information_schema",
+          "mysql",
+          "performance_schema",
+          "sys",
+          "phpmyadmin",
+        ];
+        const userDbs = (result as DatabaseInfo[]).filter(
+          (db) => !systemDbs.includes(db.name.toLowerCase()),
+        );
 
-      setDatabases(userDbs);
-      toast.success(`Connected to ${host}`);
+        setDatabases(userDbs);
+        toast.success(`Connected to ${host}`);
+      }
     } catch (err) {
-      setError(String(err));
-      setDatabases([]);
+      if (isMounted.current) {
+        setError(String(err));
+        setDatabases([]);
+      }
     } finally {
-      setLoading(false);
+      if (isMounted.current) {
+        setLoading(false);
+      }
     }
   };
 
@@ -166,12 +180,18 @@ const Databases = () => {
         password,
         dbName,
       });
-      setSelectedTables(result);
+      if (isMounted.current) {
+        setSelectedTables(result);
+      }
     } catch (err) {
-      toast.error(`Failed to fetch tables: ${err}`);
-      setIsTablesModalOpen(false);
+      if (isMounted.current) {
+        toast.error(`Failed to fetch tables: ${err}`);
+        setIsTablesModalOpen(false);
+      }
     } finally {
-      setIsLoadingTables(false);
+      if (isMounted.current) {
+        setIsLoadingTables(false);
+      }
     }
   };
 
@@ -253,7 +273,9 @@ const Databases = () => {
         trigger_type: "manual",
       });
 
-      toast.success(result);
+      if (isMounted.current) {
+          toast.success(result);
+      }
 
       // Auto-Verify if enabled and it's an SQL backup
       if (autoVerify && backupMode === "sql") {
@@ -275,10 +297,12 @@ const Databases = () => {
 
             await updateBackupVerification(latestBackup.id, verifyResult.success, verifyResult.message);
             
-            if (verifyResult.success) {
-              toast.success(`Auto-Verify: ${verifyResult.message}`);
-            } else {
-              toast.error(`Auto-Verify: ${verifyResult.message}`);
+            if (isMounted.current) {
+                if (verifyResult.success) {
+                toast.success(`Auto-Verify: ${verifyResult.message}`);
+                } else {
+                toast.error(`Auto-Verify: ${verifyResult.message}`);
+                }
             }
           }
         } catch (vErr) {
@@ -286,11 +310,15 @@ const Databases = () => {
         }
       }
 
-      setIsDialogOpen(false);
-      setDbsToBackup([]);
-      setSelectedDbs([]);
+      if (isMounted.current) {
+        setIsDialogOpen(false);
+        setDbsToBackup([]);
+        setSelectedDbs([]);
+      }
     } catch (err) {
-      toast.error(`Backup failed: ${err}`);
+      if (isMounted.current) {
+          toast.error(`Backup failed: ${err}`);
+      }
       await addBackup({
         database_name:
           dbsToBackup.length > 1
@@ -305,21 +333,24 @@ const Databases = () => {
         trigger_type: "manual",
       });
     } finally {
-      setIsBackingUp(false);
+      if (isMounted.current) {
+          setIsBackingUp(false);
+      }
     }
   };
 
   const pickBackupFolder = async () => {
     try {
       const selected = await open({ directory: true, multiple: false });
-      if (selected && typeof selected === "string") setBackupPath(selected);
+      if (selected && typeof selected === "string" && isMounted.current) {
+          setBackupPath(selected);
+      }
     } catch (err) {
       console.error(err);
     }
   };
 
   useEffect(() => {
-    detectServices();
     setShouldCompress(compressBackups);
   }, [compressBackups]);
 

@@ -24,10 +24,6 @@ const COLOR_PRESETS = [
 const Settings = () => {
   const settings = useSettingsStore();
 
-  useEffect(() => {
-    settings.initialize();
-  }, []);
-
   const pickBackupPath = async () => {
     const selected = await open({ directory: true, multiple: false });
     if (selected && typeof selected === "string") settings.setBackupPath(selected);

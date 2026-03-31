@@ -22,7 +22,7 @@ import { getSchedules, addSchedule, updateSchedule, deleteSchedule, Schedule } f
 import { invoke } from "@tauri-apps/api/core";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { toast } from 'sonner';
-import { ChevronDown, ChevronRight, Database as DbIcon } from "lucide-react";
+import { ChevronDown, ChevronRight, Database as DbIcon, RefreshCw, Loader2 } from "lucide-react";
 
 const Schedules: React.FC = () => {
     const [schedules, setSchedules] = useState<Schedule[]>([]);
@@ -31,12 +31,12 @@ const Schedules: React.FC = () => {
     const [scheduleToDelete, setScheduleToDelete] = useState<number | null>(null);
     const [currentSchedule, setCurrentSchedule] = useState<Partial<Schedule> | null>(null);
     const [availableDatabases, setAvailableDatabases] = useState<string[]>([]);
+    const [isLoadingDatabases, setIsLoadingDatabases] = useState(false);
     const [expandedRows, setExpandedRows] = useState<number[]>([]);
     const settings = useSettingsStore();
 
     useEffect(() => {
         loadSchedules();
-        fetchAvailableDatabases();
     }, []);
 
     const loadSchedules = async () => {
@@ -51,6 +51,7 @@ const Schedules: React.FC = () => {
     };
 
     const fetchAvailableDatabases = async () => {
+        setIsLoadingDatabases(true);
         try {
             const result: any[] = await invoke("list_databases", {
                 host: settings.host,
@@ -61,6 +62,9 @@ const Schedules: React.FC = () => {
             setAvailableDatabases(result.map(db => db.name));
         } catch (error) {
             console.error("Failed to fetch databases", error);
+            toast.error("Failed to connect to MySQL server. Check settings.");
+        } finally {
+            setIsLoadingDatabases(false);
         }
     };
 
@@ -103,6 +107,12 @@ const Schedules: React.FC = () => {
             setScheduleToDelete(null);
         }
     };
+
+    useEffect(() => {
+        if (isFormOpen) {
+            fetchAvailableDatabases();
+        }
+    }, [isFormOpen]);
 
     const openForm = (schedule: Partial<Schedule> | null = null) => {
         setCurrentSchedule(schedule || {
@@ -223,21 +233,45 @@ const Schedules: React.FC = () => {
                         </div>
                         
                         <div className="grid grid-cols-4 items-start gap-4">
-                            <Label className="text-right mt-2">Databases</Label>
-                            <div className="col-span-3 border rounded-md p-2 max-h-40 overflow-y-auto space-y-2">
-                                {availableDatabases.length === 0 && <p className="text-xs text-muted-foreground p-2">No databases found. Check your connection.</p>}
-                                {availableDatabases.map(db => (
-                                    <div key={db} className="flex items-center space-x-2">
-                                        <Checkbox 
-                                            id={db} 
-                                            checked={currentSchedule?.databases?.split(',').includes(db)}
-                                            onCheckedChange={() => toggleDatabaseSelection(db)}
-                                        />
-                                        <label htmlFor={db} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                                            {db}
-                                        </label>
+                            <div className="text-right mt-2 flex flex-col gap-1">
+                                <Label>Databases</Label>
+                                <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="h-7 px-2 text-[10px] uppercase font-bold text-primary"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        fetchAvailableDatabases();
+                                    }}
+                                    disabled={isLoadingDatabases}
+                                >
+                                    {isLoadingDatabases ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <RefreshCw className="h-3 w-3 mr-1" />}
+                                    Refresh
+                                </Button>
+                            </div>
+                            <div className="col-span-3 border rounded-md p-2 max-h-40 overflow-y-auto space-y-2 relative">
+                                {isLoadingDatabases ? (
+                                    <div className="flex flex-col items-center justify-center py-6 gap-2 opacity-60">
+                                        <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                                        <span className="text-xs font-medium">Scanning MySQL...</span>
                                     </div>
-                                ))}
+                                ) : (
+                                    <>
+                                        {availableDatabases.length === 0 && <p className="text-xs text-muted-foreground p-2 text-center italic">No databases found.<br/>Check your connection settings.</p>}
+                                        {availableDatabases.map(db => (
+                                            <div key={db} className="flex items-center space-x-2 px-1 hover:bg-muted/50 rounded transition-colors">
+                                                <Checkbox 
+                                                    id={db} 
+                                                    checked={currentSchedule?.databases?.split(',').includes(db)}
+                                                    onCheckedChange={() => toggleDatabaseSelection(db)}
+                                                />
+                                                <label htmlFor={db} className="text-sm font-medium leading-none py-2 w-full cursor-pointer">
+                                                    {db}
+                                                </label>
+                                            </div>
+                                        ))}
+                                    </>
+                                )}
                             </div>
                         </div>
 
