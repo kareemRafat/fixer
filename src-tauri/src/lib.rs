@@ -242,6 +242,7 @@ pub fn run() {
             commands::splash::show_splashscreen,
             commands::installer::start_one_click_install,
             commands::installer::is_laragon_installed,
+            commands::installer::get_detected_environments,
             commands::installer::cancel_install,
             apply_window_size
         ])

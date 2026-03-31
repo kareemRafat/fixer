@@ -17,6 +17,8 @@ import {
   RefreshCw,
   Sparkles,
   ArrowRight,
+  X,
+  AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -33,14 +35,15 @@ const Environment = () => {
     status,
     currentComponent,
     isLaragonInstalled,
-    checkLaragon,
+    detectedEnvironments,
+    checkEnvironments,
     startInstall,
     cancelInstall,
   } = useEnvironmentStore();
 
   useEffect(() => {
-    checkLaragon();
-  }, [checkLaragon]);
+    checkEnvironments();
+  }, [checkEnvironments]);
 
   const handleInstall = async () => {
     try {
@@ -73,34 +76,55 @@ const Environment = () => {
     await cancelInstall();
   };
 
+  const hasAnyEnvironment = detectedEnvironments?.laragon || detectedEnvironments?.xampp || detectedEnvironments?.wamp;
+
   return (
     <div className="p-8 max-w-6xl mx-auto space-y-6 relative min-h-[100vh]">
-      {/* Redesigned Full Page Overlay when Laragon is Detected */}
-      {isLaragonInstalled && showOverlay && !installing && (
+      {/* Redesigned Full Page Overlay when any environment is Detected */}
+      {hasAnyEnvironment && showOverlay && !installing && (
         <div className="absolute inset-0 z-[100] flex items-center justify-center p-6 sm:p-12 overflow-hidden rounded-xl">
           {/* Background Effects */}
           <div className="absolute inset-0 bg-background/60 backdrop-blur-3xl" />
           <div className="absolute inset-0 bg-gradient-to-tr from-green-500/5 via-transparent to-primary/5" />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-green-500/10 rounded-full blur-[120px] pointer-events-none" />
           
-          <div className="relative max-w-2xl w-full animate-in fade-in zoom-in duration-500 slide-in-from-bottom-8">
+          <div className="relative max-w-3xl w-full animate-in fade-in zoom-in duration-500 slide-in-from-bottom-8">
             <div className="text-center space-y-8">
               {/* Icon Section */}
               <div className="relative inline-block">
                 <div className="absolute inset-0 bg-green-500/20 rounded-full blur-2xl scale-150 animate-pulse" />
-                <div className="relative w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-b from-green-400 to-green-600 rounded-3xl flex items-center justify-center  transform  hover:-rotate-6 transition-transform duration-500">
-                  <CheckCircle2 className="h-12 w-12 sm:h-16 sm:w-16 text-white" />
+                <div className="relative w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-b from-green-400 to-green-600 rounded-3xl flex items-center justify-center transform -rotate-6 hover:rotate-0 transition-transform duration-500">
+                  <CheckCircle2 className="h-10 w-10 sm:h-12 sm:w-12 text-white" />
+                </div>
+                <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground p-2 rounded-xl shadow-lg animate-bounce">
+                  <Sparkles className="h-4 w-4" />
                 </div>
               </div>
 
               {/* Text Content */}
               <div className="space-y-4">
-                <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-foreground">
-                  System <span className="text-green-500">Ready.</span>
+                <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-foreground">
+                  Environments <span className="text-green-500">Detected.</span>
                 </h2>
-                <p className="text-lg sm:text-xl text-muted-foreground max-w-lg mx-auto leading-relaxed">
-                  We've detected Laragon on your machine. Your environment is perfectly configured and optimized for DBGuardX.
+                <p className="text-base sm:text-lg text-muted-foreground max-w-lg mx-auto leading-relaxed">
+                  We've scanned your system and found existing development environments. DBGuardX can work with any of these.
                 </p>
+              </div>
+
+              {/* Environment List */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl mx-auto">
+                 <div className={`p-4 rounded-2xl border flex flex-col items-center gap-2 transition-all ${detectedEnvironments?.laragon ? "bg-green-500/10 border-green-500/50 text-green-700 dark:text-green-300 shadow-lg shadow-green-500/10" : "bg-muted/50 border-border/50 opacity-40 grayscale"}`}>
+                    {detectedEnvironments?.laragon ? <CheckCircle2 className="h-5 w-5" /> : <X className="h-5 w-5" />}
+                    <span className="font-bold text-sm">Laragon</span>
+                 </div>
+                 <div className={`p-4 rounded-2xl border flex flex-col items-center gap-2 transition-all ${detectedEnvironments?.xampp ? "bg-green-500/10 border-green-500/50 text-green-700 dark:text-green-300 shadow-lg shadow-green-500/10" : "bg-muted/50 border-border/50 opacity-40 grayscale"}`}>
+                    {detectedEnvironments?.xampp ? <CheckCircle2 className="h-5 w-5" /> : <X className="h-5 w-5" />}
+                    <span className="font-bold text-sm">XAMPP</span>
+                 </div>
+                 <div className={`p-4 rounded-2xl border flex flex-col items-center gap-2 transition-all ${detectedEnvironments?.wamp ? "bg-green-500/10 border-green-500/50 text-green-700 dark:text-green-300 shadow-lg shadow-green-500/10" : "bg-muted/50 border-border/50 opacity-40 grayscale"}`}>
+                    {detectedEnvironments?.wamp ? <CheckCircle2 className="h-5 w-5" /> : <X className="h-5 w-5" />}
+                    <span className="font-bold text-sm">WAMP</span>
+                 </div>
               </div>
 
               {/* Action Cards/Buttons */}
@@ -109,38 +133,38 @@ const Environment = () => {
                     <div className="p-2 bg-primary/10 rounded-lg mb-4 group-hover:scale-110 transition-transform">
                         <Server className="h-5 w-5 text-primary" />
                     </div>
-                    <h4 className="font-bold text-lg mb-1 flex items-center gap-2">
+                    <h4 className="font-semibold text-lg mb-1 flex items-center gap-2">
                         Go to Dashboard
                         <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
                     </h4>
-                    <p className="text-sm text-muted-foreground">Start managing your databases and backups now.</p>
+                    <p className="text-sm text-muted-foreground">Everything is ready. Start managing your databases now.</p>
                 </Link>
 
                 <button 
                     onClick={() => setShowOverlay(false)}
-                    className="group flex flex-col items-start p-6 bg-card border border-border/50 rounded-2xl hover:border-green-500/50 hover:bg-green-500/5 transition-all text-left"
+                    className="group flex flex-col items-start p-6 bg-card border border-border/50 rounded-2xl hover:border-blue-500/50 hover:bg-blue-500/5 transition-all text-left"
                 >
-                    <div className="p-2 bg-green-500/10 rounded-lg mb-4 group-hover:scale-110 transition-transform">
-                        <RefreshCw className="h-5 w-5 text-green-500" />
+                    <div className="p-2 bg-blue-500/10 rounded-lg mb-4 group-hover:scale-110 transition-transform">
+                        <RefreshCw className="h-5 w-5 text-blue-500" />
                     </div>
-                    <h4 className="font-bold text-lg mb-1 flex items-center gap-2 text-green-600 dark:text-green-400">
-                        Environment Settings
+                    <h4 className="font-semibold text-lg mb-1 flex items-center gap-2 text-blue-600 dark:text-blue-400">
+                        Setup Laragon
                         <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
                     </h4>
-                    <p className="text-sm text-muted-foreground">Reinstall or modify your existing environment setup.</p>
+                    <p className="text-sm text-muted-foreground">You can still install Laragon to use our optimized engine.</p>
                 </button>
               </div>
 
               {/* Status Footer */}
-              <div className="pt-8 flex items-center justify-center gap-6">
+              <div className="pt-4 flex items-center justify-center gap-6">
                 <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60">
                     <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-                    Local Engine Active
+                    System Healthy
                 </div>
                 <div className="h-px w-8 bg-border/50" />
                 <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60">
-                    <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-                    Secure Connection
+                    <AlertCircle className="h-3 w-3" />
+                    Automatic Link Active
                 </div>
               </div>
             </div>
@@ -154,6 +178,7 @@ const Environment = () => {
           Environment Setup
         </h1>
       </div>
+
       <p className="text-muted-foreground">
         Configure your development environment with one click. This will install
         Laragon, PHP, and phpMyAdmin.

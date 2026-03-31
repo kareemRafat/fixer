@@ -13,6 +13,22 @@ pub async fn is_laragon_installed() -> bool {
     installer::detect_laragon_path().is_ok()
 }
 
+#[derive(serde::Serialize)]
+pub struct DetectedEnvironments {
+    pub laragon: bool,
+    pub xampp: bool,
+    pub wamp: bool,
+}
+
+#[command]
+pub async fn get_detected_environments() -> DetectedEnvironments {
+    DetectedEnvironments {
+        laragon: installer::detect_laragon_path().is_ok(),
+        xampp: installer::detect_xampp_path().is_some(),
+        wamp: installer::detect_wamp_path().is_some(),
+    }
+}
+
 #[command]
 pub async fn start_one_click_install(
     app: AppHandle,

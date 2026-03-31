@@ -132,6 +132,36 @@ pub fn detect_laragon_path() -> Result<PathBuf, String> {
     Err("Could not detect Laragon installation path. Please ensure Laragon is installed correctly.".to_string())
 }
 
+pub fn detect_xampp_path() -> Option<PathBuf> {
+    let common_paths = vec!["C:\\xampp", "D:\\xampp", "E:\\xampp"];
+    for p in common_paths {
+        let path = PathBuf::from(p);
+        if path.join("xampp-control.exe").exists() {
+            return Some(path);
+        }
+    }
+    None
+}
+
+pub fn detect_wamp_path() -> Option<PathBuf> {
+    // Try Registry first
+    let hklm = RegKey::predef(HKEY_LOCAL_MACHINE);
+    if let Ok(key) = hklm.open_subkey("SOFTWARE\\WampServer") {
+        if let Ok(path_val) = key.get_value::<String, _>("InstallDir") {
+            if !path_val.is_empty() { return Some(PathBuf::from(path_val)); }
+        }
+    }
+
+    let common_paths = vec!["C:\\wamp64", "C:\\wamp", "D:\\wamp64", "D:\\wamp"];
+    for p in common_paths {
+        let path = PathBuf::from(p);
+        if path.join("wampmanager.exe").exists() {
+            return Some(path);
+        }
+    }
+    None
+}
+
 pub fn extract_zip(zip_path: &Path, target_dir: &Path) -> Result<(), String> {
     let file = File::open(zip_path).map_err(|e| e.to_string())?;
     let mut archive = ZipArchive::new(file).map_err(|e| e.to_string())?;

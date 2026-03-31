@@ -8,12 +8,19 @@ interface ProgressPayload {
   status: string;
 }
 
+interface DetectedEnvironments {
+  laragon: boolean;
+  xampp: boolean;
+  wamp: boolean;
+}
+
 interface EnvironmentState {
   installing: boolean;
   progress: number;
   status: string;
   currentComponent: string;
   isLaragonInstalled: boolean | null;
+  detectedEnvironments: DetectedEnvironments | null;
   
   setInstalling: (installing: boolean) => void;
   setProgress: (progress: number) => void;
@@ -22,6 +29,7 @@ interface EnvironmentState {
   setIsLaragonInstalled: (installed: boolean | null) => void;
   
   checkLaragon: () => Promise<void>;
+  checkEnvironments: () => Promise<void>;
   startInstall: (configUrl: string) => Promise<void>;
   cancelInstall: () => Promise<void>;
   initListeners: () => () => void;
@@ -33,6 +41,7 @@ export const useEnvironmentStore = create<EnvironmentState>((set, get) => ({
   status: "Ready to install",
   currentComponent: "",
   isLaragonInstalled: null,
+  detectedEnvironments: null,
 
   setInstalling: (installing) => set({ installing }),
   setProgress: (progress) => set({ progress }),
@@ -47,6 +56,18 @@ export const useEnvironmentStore = create<EnvironmentState>((set, get) => ({
     } catch (e) {
       console.error("Failed to check Laragon installation:", e);
       set({ isLaragonInstalled: false });
+    }
+  },
+
+  checkEnvironments: async () => {
+    try {
+      const detected = await invoke<DetectedEnvironments>("get_detected_environments");
+      set({ 
+        detectedEnvironments: detected,
+        isLaragonInstalled: detected.laragon
+      });
+    } catch (e) {
+      console.error("Failed to detect environments:", e);
     }
   },
 
