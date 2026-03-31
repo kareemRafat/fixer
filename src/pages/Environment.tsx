@@ -12,7 +12,6 @@ import {
   Download,
   CheckCircle2,
   Loader2,
-  ShieldAlert,
   XCircle,
   RefreshCw,
   Sparkles,
@@ -21,7 +20,6 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useEnvironmentStore } from "@/store/useEnvironmentStore";
 import { Link } from "react-router-dom";
 
@@ -34,7 +32,6 @@ const Environment = () => {
     progress,
     status,
     currentComponent,
-    isLaragonInstalled,
     detectedEnvironments,
     checkEnvironments,
     startInstall,

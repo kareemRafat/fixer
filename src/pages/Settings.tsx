@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { invoke } from "@tauri-apps/api/core";
 import { Button } from "@/components/ui/button";
